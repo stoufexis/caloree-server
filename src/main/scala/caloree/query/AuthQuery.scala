@@ -1,0 +1,37 @@
+package caloree.query
+
+import caloree.model.Types._
+import caloree.model.User
+
+import doobie._
+import doobie.implicits._
+
+object AuthQuery {
+  val r: Read[User] = implicitly
+
+  def verifyCredentials(username: Username, accessToken: AccessToken): ConnectionIO[Option[User]] =
+    sql"""
+      select s.id, s.username, s.token
+      from (select u.id, u.username, token.token
+            from token
+                     inner join "user" u on u.id = token.user_id
+            where username = $username
+            order by generated_at desc
+            limit 1) as s
+      where s.token = $accessToken;
+    """
+      .query[User]
+      .option
+
+  def getToken(username: Username, password: Password): ConnectionIO[AccessToken] =
+    sql"""
+      insert into token(user_id)
+      select id
+      from "user"
+      where username      = $username
+      and hashed_password = sha256($password::bytea)
+    """
+      .update
+      .withUniqueGeneratedKeys("token")
+
+}
