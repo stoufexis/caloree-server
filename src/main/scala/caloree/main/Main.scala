@@ -1,21 +1,21 @@
 package caloree.main
 
 import doobie.util.transactor.Transactor
+
 import org.http4s.HttpRoutes
 import org.http4s.Response.http4sKleisliResponseSyntaxOptionT
 import org.http4s.ember.server._
 import org.http4s.server.AuthMiddleware
+
 import cats.effect.{IO, IOApp}
+
 import caloree.auth.AuthUser
 import caloree.logging.Logging
-import caloree.model.Types.{AccessToken, Password, Username}
 import caloree.model.User
-import caloree.query.AuthQuery
 import caloree.query.Repos._
 import caloree.routes.Routes
-import com.comcast.ip4s._
-import doobie.implicits._
 
+import com.comcast.ip4s._
 
 object Main extends IOApp.Simple {
   def server(routes: HttpRoutes[IO]): IO[Nothing] =
@@ -36,9 +36,9 @@ object Main extends IOApp.Simple {
 
   implicit val auth: AuthMiddleware[IO, User] = AuthUser[IO]
 
-  val routes: HttpRoutes[IO] = Logging(Routes.routes[IO])
+  val (trace, r) = Routes.routes[IO].run
 
-//  def run = AuthQuery.verifyCredentials(Username("stef1"), AccessToken("debf3ad6-d716-42df-a190-f3815d96b7e3")).transact(xa).map(println(_)).handleError(_ => ())
+  val routes: HttpRoutes[IO] = Logging(r)
 
-  def run: IO[Unit] = server(routes)
+  def run: IO[Unit] = IO.println(trace) *> server(routes)
 }

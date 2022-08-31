@@ -8,6 +8,7 @@ import cats.effect.kernel.Concurrent
 import cats.syntax.all._
 import cats.{Monad, MonadError, MonadThrow}
 
+import caloree.TracedRoute.{Trace, TracedAuthedRoute}
 import caloree.model.Types.EntityId
 import caloree.model.{MealFood, User}
 import caloree.query.DayInstanceQuery.MealWithFoods
@@ -22,11 +23,17 @@ object MealFoodRoutes {
   def routes[F[_]: MonadThrow: EntityEncoder[*[_], MealFoodPayload]: EntityDecoder[*[_], MealFoodPayload]](
       implicit
       get: Execute.Many[F, (EntityId[User], LocalDate), MealFood],
-      di: Execute.Unique[F, (EntityId[User], LocalDate, List[MealWithFoods]), Int]): AuthedRoutes[User, F] = {
+      di: Execute.Unique[F, (EntityId[User], LocalDate, List[MealWithFoods]), Int]): TracedAuthedRoute[User, F] = {
     val dsl = Http4sDsl[F]
     import dsl._
 
-    AuthedRoutes.of {
+    val trace = Trace.PathNode(
+      Nil,
+      List(
+        Trace.PathLeaf(GET, List("page", "date", "limit"), Nil),
+        Trace.PathLeaf(POST, Nil, Nil)))
+
+    TracedAuthedRoute.of(trace) {
       case GET -> _ :? PageP(page) +& DateP(date) +& Limit(limit) as u =>
         get.execute((u.id, date), page, limit).asResponse
 
