@@ -17,7 +17,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 object Routes {
-  private implicit val localDateQueryParamD: QueryParamDecoder[LocalDate] =
+  implicit val localDateQueryParamD: QueryParamDecoder[LocalDate] =
     QueryParamDecoder.localDate(DateTimeFormatter.BASIC_ISO_DATE)
 
   object CustomFoodIdP extends QueryParamDecoderMatcher[EntityId[CustomFood]]("custom_food_id")

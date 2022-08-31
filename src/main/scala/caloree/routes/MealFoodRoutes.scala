@@ -7,16 +7,16 @@ import org.http4s.{DecodeFailure, EntityDecoder, EntityEncoder}
 import cats.MonadThrow
 import cats.syntax.all._
 
-import caloree.TracedAuthedRoute
 import caloree.TracedAuthedRoute.TracedAuthedRoute
 import caloree.TracedRoute.Trace
-import caloree.model.Types.EntityId
+import caloree.model.Types.{EntityId, Page}
 import caloree.model.{MealFood, User}
 import caloree.query.DayInstanceQuery.MealWithFoods
 import caloree.query.Execute
-import caloree.routes.Routes.{DateP, Limit, PageP}
+import caloree.routes.Routes.{DateP, Limit, PageP, localDateQueryParamD}
 import caloree.routes.dto.MealFoodPayload
 import caloree.util.ToResponseListSyntax
+import caloree.{ExtractParams, TracedAuthedRoute}
 
 import java.time.LocalDate
 

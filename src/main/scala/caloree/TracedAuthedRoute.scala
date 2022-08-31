@@ -17,13 +17,13 @@ import TracedRoute._
 object TracedAuthedRoute {
   type TracedAuthedRoute[U, F[_]] = Writer[Trace, AuthedRoutes[U, F]]
 
-  type Route[F[_], U, A] = (Method, ExtractParams[A], PartialFunction[(A, U), F[Response[F]]])
+  type Route[F[_], U, A] = ((Method, ExtractParams[F, A]), PartialFunction[(Request[F], A, U), F[Response[F]]])
 
   def of[U, F[_]: Monad](trace: Trace)(pf: PartialFunction[AuthedRequest[F, U], F[Response[F]]])
       : TracedAuthedRoute[U, F] = Writer(trace, AuthedRoutes.of(pf))
 
   def route[A, U, F[_]: Monad](r: Route[F, U, A]): TracedAuthedRoute[U, F] = {
-    val (method, ext, f)     = r
+    val ((method, ext), f)   = r
     val ExtractParams(qs, q) = ext
     val trace                = Trace.PathLeaf(method, qs, Nil)
 
@@ -31,8 +31,8 @@ object TracedAuthedRoute {
   }
 
   def route2[A, B, U, F[_]: Monad](r1: Route[F, U, A], r2: Route[F, U, B]): TracedAuthedRoute[U, F] = {
-    val (method1, ext1, f1)                              = r1
-    val (method2, ext2, f2)                              = r2
+    val ((method1, ext1), f1)                            = r1
+    val ((method2, ext2), f2)                            = r2
     val (ExtractParams(qs1, q1), ExtractParams(qs2, q2)) = (ext1, ext2)
 
     val trace =
@@ -45,9 +45,11 @@ object TracedAuthedRoute {
     of(trace)(routes)
   }
 
-  private def partialOption[A, U]: PartialFunction[(Option[A], U), (A, U)] = { case (Some(a), u) => (a, u) }
+  private def partialOption[A, U, F[_]]: PartialFunction[(Request[F], Option[A], U), (Request[F], A, U)] = {
+    case (r, Some(a), u) => (r, a, u)
+  }
 
-  private def decode[F[_], A, U](
-      q: Map[String, Seq[String]] => Option[A]): PartialFunction[AuthedRequest[F, U], (Option[A], U)] =
-    PartialFunction.fromFunction(req => (q(req.req.multiParams), req.context))
+  private def decode[F[_], A, U](q: Request[F] => Option[A])
+      : PartialFunction[AuthedRequest[F, U], (Request[F], Option[A], U)] =
+    PartialFunction.fromFunction(req => (req.req, q(req.req), req.context))
 }

@@ -133,9 +133,6 @@ object TracedRoute {
   }
 
 
-
-
-
   def tracedMiddleware[F[_], A, B, C, D](mid: Kleisli[F, A, B] => Kleisli[F, C, D])
       : Writer[Trace, Kleisli[F, A, B]] => Writer[Trace, Kleisli[F, C, D]] = _.map(mid(_))
 
