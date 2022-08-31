@@ -1,20 +1,18 @@
 package caloree.routes
 
+import org.http4s.HttpRoutes
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.dsl.Http4sDsl
-import org.http4s.{AuthedRoutes, HttpRoutes}
 
 import cats.Monad
 import cats.syntax.all._
 
-import caloree.model.Types.{AccessToken, Description, EntityId, Page, Password, Username}
-import caloree.model.{CustomFood, CustomFoodPreview, User}
+import caloree.model.Types.{AccessToken, Password, Username}
 import caloree.query.Execute
-import caloree.routes.Routes._
 import caloree.util._
 
 object AuthRoutes {
-  def routes[F[_]: Monad](implicit get: Execute[F, (Username, Password), AccessToken]): HttpRoutes[F] = {
+  def routes[F[_]: Monad](implicit get: Execute.Unique[F, (Username, Password), AccessToken]): HttpRoutes[F] = {
     val dsl = Http4sDsl[F]
     import dsl._
 

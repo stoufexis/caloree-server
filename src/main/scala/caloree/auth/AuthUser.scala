@@ -12,7 +12,7 @@ import caloree.query.Execute
 import caloree.util.extractHeaders
 
 object AuthUser {
-  def apply[F[_]: Monad](implicit get: Execute[F, (Username, AccessToken), Option[User]]): AuthMiddleware[F, User] =
+  def apply[F[_]: Monad](implicit get: Execute.Optional[F, (Username, AccessToken), User]): AuthMiddleware[F, User] =
     AuthMiddleware {
       Kleisli { req =>
         OptionT {

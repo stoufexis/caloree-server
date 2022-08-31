@@ -1,14 +1,16 @@
 package caloree.routes
 
+import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.dsl.impl.QueryParamDecoderMatcher
 import org.http4s.server.{AuthMiddleware, Router}
 import org.http4s.{HttpRoutes, QueryParamDecoder}
 
-import cats.Monad
+import cats.effect.kernel.Concurrent
+import cats.{Monad, MonadThrow}
 
-import caloree.auth.AuthUser
-import caloree.model.Types.{AccessToken, Description, EntityId, Grams, Page, Password, Username}
-import caloree.model.{CustomFood, CustomFoodPreview, Food, FoodPreview, Meal, MealFood, User}
+import caloree.model.Types._
+import caloree.model._
+import caloree.query.DayInstanceQuery.MealWithFoods
 import caloree.query.Execute
 
 import java.time.LocalDate
@@ -27,18 +29,20 @@ object Routes {
   object MealIdP       extends QueryParamDecoderMatcher[EntityId[Meal]]("meal_id")
   object GramsP        extends QueryParamDecoderMatcher[Grams]("grams")
 
-  def routes[F[_]: Monad](
+  def routes[F[_]: Concurrent](
       implicit
       auth: AuthMiddleware[F, User],
-      r1: Execute[F, (Username, AccessToken), Option[User]],
-      r2: Execute[F, (Username, Password), AccessToken],
-      r3: Execute[F, (Description, EntityId[User], Page, Int), List[CustomFoodPreview]],
-      r4: Execute[F, (EntityId[CustomFood], EntityId[User]), Option[CustomFood]],
-      r5: Execute[F, (Description, Page, Int), List[FoodPreview]],
-      r6: Execute[F, EntityId[Food], Option[Food]],
-      r7: Execute[F, (EntityId[User], LocalDate, Page, Int), List[MealFood]]
+      r1: Execute.Optional[F, (Username, AccessToken), User],
+      r2: Execute.Unique[F, (Username, Password), AccessToken],
+      r3: Execute.Many[F, (Description, EntityId[User]), CustomFoodPreview],
+      r4: Execute.Optional[F, (EntityId[CustomFood], EntityId[User]), CustomFood],
+      r5: Execute.Many[F, Description, FoodPreview],
+      r6: Execute.Optional[F, EntityId[Food], Food],
+      r7: Execute.Many[F, (EntityId[User], LocalDate), MealFood],
+      r8: Execute.Unique[F, (EntityId[User], LocalDate, List[MealWithFoods]), Int]
   ): HttpRoutes[F] = Router(
     "auth"        -> AuthRoutes.routes,
+    "meal-food"   -> auth(MealFoodRoutes.routes),
     "custom-food" -> auth(CustomFoodRoutes.routes),
     "food"        -> auth(FoodRoutes.routes)
   )

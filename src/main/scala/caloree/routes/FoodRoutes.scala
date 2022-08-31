@@ -14,8 +14,8 @@ import caloree.util._
 object FoodRoutes {
   def routes[F[_]: Monad](
       implicit
-      go: Execute[F, EntityId[Food], Option[Food]],
-      gm: Execute[F, (Description, Page, Int), List[FoodPreview]]
+      go: Execute.Optional[F, EntityId[Food], Food],
+      gm: Execute.Many[F, Description, FoodPreview]
   ): AuthedRoutes[User, F] = {
     val dsl = Http4sDsl[F]
     import dsl._
@@ -23,7 +23,7 @@ object FoodRoutes {
     AuthedRoutes.of {
       case GET -> _ :? FoodIdP(id) as _                                       => go.execute(id).asResponse
       case GET -> _ :? DescriptionP(desc) +& PageP(page) +& Limit(limit) as _ =>
-        gm.execute((desc, page, limit)).asResponse
+        gm.execute(desc, page, limit).asResponse
     }
   }
 }
