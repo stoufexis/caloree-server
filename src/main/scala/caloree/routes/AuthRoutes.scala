@@ -1,6 +1,8 @@
 package caloree.routes
 
-import caloree.TracedRoute.{Trace, TracedHttpRoute}
+import caloree.TracedHttpRoute
+import caloree.TracedHttpRoute.TracedHttpRoute
+import caloree.TracedRoute.Trace
 import org.http4s.HttpRoutes
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.dsl.Http4sDsl

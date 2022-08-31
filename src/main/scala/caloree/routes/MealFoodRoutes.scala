@@ -2,13 +2,14 @@ package caloree.routes
 
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.dsl.Http4sDsl
-import org.http4s.{AuthedRoutes, DecodeFailure, EntityDecoder, EntityEncoder}
+import org.http4s.{DecodeFailure, EntityDecoder, EntityEncoder}
 
-import cats.effect.kernel.Concurrent
+import cats.MonadThrow
 import cats.syntax.all._
-import cats.{Monad, MonadError, MonadThrow}
 
-import caloree.TracedRoute.{Trace, TracedAuthedRoute}
+import caloree.TracedAuthedRoute
+import caloree.TracedAuthedRoute.TracedAuthedRoute
+import caloree.TracedRoute.Trace
 import caloree.model.Types.EntityId
 import caloree.model.{MealFood, User}
 import caloree.query.DayInstanceQuery.MealWithFoods

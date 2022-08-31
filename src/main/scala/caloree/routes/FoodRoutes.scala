@@ -5,7 +5,9 @@ import org.http4s.dsl.Http4sDsl
 
 import cats.Monad
 
-import caloree.TracedRoute.{Trace, TracedAuthedRoute}
+import caloree.TracedAuthedRoute
+import caloree.TracedAuthedRoute.TracedAuthedRoute
+import caloree.TracedRoute.Trace
 import caloree.model.Types.{Description, EntityId, Page}
 import caloree.model.{Food, FoodPreview, User}
 import caloree.query.Execute

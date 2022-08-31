@@ -1,16 +1,18 @@
 package caloree.routes
 
-import org.http4s.AuthedRoutes
+import org.http4s.Method.GET
 import org.http4s.dsl.Http4sDsl
 
 import cats.Monad
 
-import caloree.TracedRoute.{Trace, TracedAuthedRoute}
+import caloree.TracedAuthedRoute.{Route, TracedAuthedRoute}
+import caloree.TracedRoute.Trace
 import caloree.model.Types.{Description, EntityId, Page}
-import caloree.model.{CustomFood, CustomFoodPreview, User}
+import caloree.model.{CustomFood, CustomFoodPreview, Food, User}
 import caloree.query.Execute
 import caloree.routes.Routes._
 import caloree.util._
+import caloree.{ExtractParams, TracedAuthedRoute}
 
 object CustomFoodRoutes {
   def routes[F[_]: Monad](
@@ -18,21 +20,15 @@ object CustomFoodRoutes {
       go: Execute.Optional[F, (EntityId[CustomFood], EntityId[User]), CustomFood],
       gm: Execute.Many[F, (Description, EntityId[User]), CustomFoodPreview]
   ): TracedAuthedRoute[User, F] = {
-    val dsl = Http4sDsl[F]
-    import dsl._
+    val params1 = ExtractParams[EntityId[CustomFood]]("custom_food_id")
+    val params2 = ExtractParams[Description, Page, Int]("description", "page", "limit")
 
-    val trace = Trace.PathNode(
-      Nil,
-      List(
-        Trace.PathLeaf(GET, List("custom_food_id"), Nil),
-        Trace.PathLeaf(GET, List("description", "page", "limit"), Nil)))
+    val r1: Route[F, User, EntityId[CustomFood]] =
+      (GET, params1, { case (a, User(uid, _, _)) => go.execute((a, uid)).asResponse })
 
-    TracedAuthedRoute.of(trace) {
-      case GET -> _ :? CustomFoodIdP(id) as User(uid, _, _) =>
-        go.execute((id, uid)).asResponse
+    val r2: Route[F, User, (Description, Page, Int)] =
+      (GET, params2, { case ((desc, page, limit), User(uid, _, _)) => gm.execute((desc, uid), page, limit).asResponse })
 
-      case GET -> _ :? DescriptionP(desc) +& PageP(page) +& Limit(limit) as User(uid, _, _) =>
-        gm.execute((desc, uid), page, limit).asResponse
-    }
+    TracedAuthedRoute.route2(r1, r2)
   }
 }

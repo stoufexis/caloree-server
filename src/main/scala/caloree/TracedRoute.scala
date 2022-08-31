@@ -1,21 +1,15 @@
 package caloree
 
+import caloree.TracedHttpRoute.TracedHttpRoute
+import caloree.TracedRoute.Trace.{PathLeaf, PathNode}
+import cats.{Monoid, _}
+import cats.data.{Kleisli, Writer}
+import cats.syntax.all._
 import org.http4s.Method.{GET, POST}
-import org.http4s.dsl.impl.Methods
-import org.http4s.server.{AuthMiddleware, Router}
+import org.http4s.server.Router
 import org.http4s.{AuthedRequest, AuthedRoutes, HttpRoutes, Method, Request, Response}
 
-import cats.FlatMap
-import cats.Monoid
-import cats._
-import cats.data.{Kleisli, Writer, WriterT}
-import cats.effect.IO
-import cats.syntax.all._
-
 import scala.annotation.tailrec
-
-import caloree.TracedRoute.Trace.{PathLeaf, PathNode}
-import caloree.model.User
 
 object TracedRoute {
 
@@ -119,8 +113,6 @@ object TracedRoute {
     }
   }
 
-  type TracedHttpRoute[F[_]]      = Writer[Trace, HttpRoutes[F]]
-  type TracedAuthedRoute[U, F[_]] = Writer[Trace, AuthedRoutes[U, F]]
 
   object Route {
     type TracedMapping[F[_]] = (String, TracedHttpRoute[F])
@@ -140,15 +132,9 @@ object TracedRoute {
 
   }
 
-  object TracedAuthedRoute {
-    def of[U, F[_]: Monad](trace: Trace)(pf: PartialFunction[AuthedRequest[F, U], F[Response[F]]])
-        : TracedAuthedRoute[U, F] = Writer(trace, AuthedRoutes.of(pf))
-  }
 
-  object TracedHttpRoute {
-    def of[F[_]: Monad](trace: Trace)(pf: PartialFunction[Request[F], F[Response[F]]]): TracedHttpRoute[F] =
-      Writer(trace, HttpRoutes.of(pf))
-  }
+
+
 
   def tracedMiddleware[F[_], A, B, C, D](mid: Kleisli[F, A, B] => Kleisli[F, C, D])
       : Writer[Trace, Kleisli[F, A, B]] => Writer[Trace, Kleisli[F, C, D]] = _.map(mid(_))
