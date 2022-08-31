@@ -1,15 +1,17 @@
 package caloree.query
 
+import doobie._
+import doobie.implicits._
+import doobie.implicits.legacy.localdate._
+
 import caloree.model.Types._
 import caloree.model.{MealFood, User}
 
 import java.time.LocalDate
 
-import doobie._
-import doobie.implicits._
-import doobie.implicits.legacy.localdate._
-
 object MealFoodQuery {
+  private implicit val han: LogHandler = LogHandler.jdkLogHandler
+
   def mealFoodByUserAndDate(
       user: EntityId[User],
       date: LocalDate,
@@ -22,11 +24,9 @@ object MealFoodQuery {
       where user_id = $user
       and   "day"   = $date
       order by meal_id
+      limit $limit
       offset $page * $limit 
     """
       .query[MealFood]
-      .stream
-      .take(limit)
-      .compile
-      .toList
+      .to[List]
 }

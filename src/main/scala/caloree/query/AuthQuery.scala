@@ -2,12 +2,12 @@ package caloree.query
 
 import caloree.model.Types._
 import caloree.model.User
-
 import doobie._
 import doobie.implicits._
+import doobie.util.log.{ExecFailure, ProcessingFailure, Success}
 
 object AuthQuery {
-  val r: Read[User] = implicitly
+  private implicit val han: LogHandler = LogHandler.jdkLogHandler
 
   def verifyCredentials(username: Username, accessToken: AccessToken): ConnectionIO[Option[User]] =
     sql"""
@@ -18,7 +18,7 @@ object AuthQuery {
             where username = $username
             order by generated_at desc
             limit 1) as s
-      where s.token = $accessToken;
+      where s.token = $accessToken :: uuid;
     """
       .query[User]
       .option

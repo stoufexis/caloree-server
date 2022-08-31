@@ -7,6 +7,7 @@ import doobie._
 import doobie.implicits._
 
 object CustomFoodPreviewQuery {
+  private implicit val han: LogHandler = LogHandler.jdkLogHandler
 
   def customFoodsPreviewByDescription(
       description: Description,
@@ -16,15 +17,13 @@ object CustomFoodPreviewQuery {
   ): ConnectionIO[List[CustomFoodPreview]] =
     sql"""
       select id, description
-      from custom_food
-      where description_tsvector @@ to_tsquery('english', $description)
-      and   user_id = $user
+      from   custom_food
+      where  description_tsvector @@ to_tsquery('english', $description)
+      and    user_id = $user
+      limit  $limit
       offset $page * $limit
     """
       .query[CustomFoodPreview]
-      .stream
-      .take(limit)
-      .compile
-      .toList
+      .to[List]
 
 }

@@ -7,6 +7,8 @@ import doobie._
 import doobie.implicits._
 
 object FoodQuery {
+  private implicit val han: LogHandler = LogHandler.jdkLogHandler
+
   def foodById(id: EntityId[Food]): ConnectionIO[Option[Food]] =
     sql"""
       select id, description, energy, protein, carbs, fat, fiber
