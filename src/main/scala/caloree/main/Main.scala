@@ -22,7 +22,7 @@ object Main extends IOApp.Simple {
     EmberServerBuilder
       .default[IO]
       .withHost(ipv4"0.0.0.0")
-      .withPort(port"8080")
+      .withPort(port"8081")
       .withHttpApp(routes.orNotFound)
       .build
       .use(_ => IO.never)
@@ -36,9 +36,7 @@ object Main extends IOApp.Simple {
 
   implicit val auth: AuthMiddleware[IO, User] = AuthUser[IO]
 
-  val (trace, r) = Routes.routes[IO].run
+  val routes: HttpRoutes[IO] = Logging(Routes.routes[IO])
 
-  val routes: HttpRoutes[IO] = Logging(r)
-
-  def run: IO[Unit] = IO.println(trace) *> server(routes)
+  def run: IO[Unit] = server(routes)
 }

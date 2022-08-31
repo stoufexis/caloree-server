@@ -2,21 +2,19 @@ package caloree.routes
 
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.dsl.Http4sDsl
-import org.http4s.{DecodeFailure, EntityDecoder, EntityEncoder}
+import org.http4s.{AuthedRoutes, DecodeFailure, EntityDecoder, EntityEncoder}
 
-import cats.MonadThrow
+import cats.effect.kernel.Concurrent
 import cats.syntax.all._
+import cats.{Monad, MonadError, MonadThrow}
 
-import caloree.TracedAuthedRoute.TracedAuthedRoute
-import caloree.TracedRoute.Trace
-import caloree.model.Types.{EntityId, Page}
+import caloree.model.Types.EntityId
 import caloree.model.{MealFood, User}
 import caloree.query.DayInstanceQuery.MealWithFoods
 import caloree.query.Execute
-import caloree.routes.Routes.{DateP, Limit, PageP, localDateQueryParamD}
+import caloree.routes.Routes.{DateP, Limit, PageP}
 import caloree.routes.dto.MealFoodPayload
 import caloree.util.ToResponseListSyntax
-import caloree.{ExtractParams, TracedAuthedRoute}
 
 import java.time.LocalDate
 
@@ -24,17 +22,11 @@ object MealFoodRoutes {
   def routes[F[_]: MonadThrow: EntityEncoder[*[_], MealFoodPayload]: EntityDecoder[*[_], MealFoodPayload]](
       implicit
       get: Execute.Many[F, (EntityId[User], LocalDate), MealFood],
-      di: Execute.Unique[F, (EntityId[User], LocalDate, List[MealWithFoods]), Int]): TracedAuthedRoute[User, F] = {
+      di: Execute.Unique[F, (EntityId[User], LocalDate, List[MealWithFoods]), Int]): AuthedRoutes[User, F] = {
     val dsl = Http4sDsl[F]
     import dsl._
 
-    val trace = Trace.PathNode(
-      Nil,
-      List(
-        Trace.PathLeaf(GET, List("page", "date", "limit"), Nil),
-        Trace.PathLeaf(POST, Nil, Nil)))
-
-    TracedAuthedRoute.of(trace) {
+    AuthedRoutes.of {
       case GET -> _ :? PageP(page) +& DateP(date) +& Limit(limit) as u =>
         get.execute((u.id, date), page, limit).asResponse
 

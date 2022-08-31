@@ -1,13 +1,12 @@
 package caloree.routes
 
-import caloree.TracedHttpRoute.TracedHttpRoute
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.dsl.impl.QueryParamDecoderMatcher
 import org.http4s.server.{AuthMiddleware, Router}
 import org.http4s.{HttpRoutes, QueryParamDecoder}
+
 import cats.effect.kernel.Concurrent
-import cats.{Monad, MonadThrow}
-import caloree.TracedRoute
+
 import caloree.model.Types._
 import caloree.model._
 import caloree.query.DayInstanceQuery.MealWithFoods
@@ -40,14 +39,10 @@ object Routes {
       r6: Execute.Optional[F, EntityId[Food], Food],
       r7: Execute.Many[F, (EntityId[User], LocalDate), MealFood],
       r8: Execute.Unique[F, (EntityId[User], LocalDate, List[MealWithFoods]), Int]
-  ): TracedHttpRoute[F] = {
-    val trAuth = TracedRoute.tracedMiddleware(auth)
-
-    TracedRoute.Route(
-      "auth"        -> AuthRoutes.routes,
-      "meal-food"   -> trAuth(MealFoodRoutes.routes),
-      "custom-food" -> trAuth(CustomFoodRoutes.routes),
-      "food"        -> trAuth(FoodRoutes.routes)
-    )
-  }
+  ): HttpRoutes[F] = Router(
+    "auth"        -> AuthRoutes.routes,
+    "meal-food"   -> auth(MealFoodRoutes.routes),
+    "custom-food" -> auth(CustomFoodRoutes.routes),
+    "food"        -> auth(FoodRoutes.routes)
+  )
 }
