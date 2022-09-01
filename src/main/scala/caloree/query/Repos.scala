@@ -1,10 +1,8 @@
 package caloree.query
 
 import doobie.util.transactor.Transactor
-
 import cats.effect.MonadCancelThrow
-
-import caloree.model.Types.{AccessToken, Description, EntityId, Page, Password, Username}
+import caloree.model.Types.{AccessToken, Description, EntityId, Grams, Page, Password, Username}
 import caloree.model.{CustomFood, CustomFoodPreview, Food, FoodPreview, MealFood, User}
 import caloree.query.DayInstanceQuery.MealWithFoods
 
@@ -32,8 +30,8 @@ object Repos {
       : Execute.Many[F, Description, FoodPreview] =
     Execute.many { case (desc, page, limit) => FoodPreviewQuery.foodsPreviewByDescription(desc, page, limit) }
 
-  implicit def foodByIdRepo[F[_]: MonadCancelThrow: Transactor]: Execute.Optional[F, EntityId[Food], Food] =
-    Execute.option(FoodQuery.foodById)
+  implicit def foodByIdRepo[F[_]: MonadCancelThrow: Transactor]: Execute.Optional[F, (EntityId[Food], Grams), Food] =
+    Execute.option((FoodQuery.foodById _).tupled)
 
   implicit def mealFoodByUserAndDateRepo[F[_]: MonadCancelThrow: Transactor]
       : Execute.Many[F, (EntityId[User], LocalDate), MealFood] =

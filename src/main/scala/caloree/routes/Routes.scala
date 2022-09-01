@@ -32,13 +32,13 @@ object Routes {
       implicit
       auth: AuthMiddleware[F, User],
       r1: Execute.Optional[F, (Username, AccessToken), User],
-      r2: Execute.Unique[F, (Username, Password), AccessToken],
-      r3: Execute.Many[F, (Description, EntityId[User]), CustomFoodPreview],
       r4: Execute.Optional[F, (EntityId[CustomFood], EntityId[User]), CustomFood],
+      r6: Execute.Optional[F, (EntityId[Food], Grams), Food],
+      r2: Execute.Unique[F, (Username, Password), AccessToken],
+      r8: Execute.Unique[F, (EntityId[User], LocalDate, List[MealWithFoods]), Int],
+      r3: Execute.Many[F, (Description, EntityId[User]), CustomFoodPreview],
       r5: Execute.Many[F, Description, FoodPreview],
-      r6: Execute.Optional[F, EntityId[Food], Food],
-      r7: Execute.Many[F, (EntityId[User], LocalDate), MealFood],
-      r8: Execute.Unique[F, (EntityId[User], LocalDate, List[MealWithFoods]), Int]
+      r7: Execute.Many[F, (EntityId[User], LocalDate), MealFood]
   ): HttpRoutes[F] = Router(
     "auth"        -> AuthRoutes.routes,
     "meal-food"   -> auth(MealFoodRoutes.routes),
