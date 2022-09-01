@@ -10,14 +10,12 @@ import caloree.model.{MealFood, User}
 import java.time.LocalDate
 
 object MealFoodQuery {
-  private implicit val han: LogHandler = LogHandler.jdkLogHandler
-
   def mealFoodByUserAndDate(
       user: EntityId[User],
       date: LocalDate,
       page: Page,
-      limit: Int
-  ): ConnectionIO[List[MealFood]] =
+      limit: Int)(
+      implicit lh: LogHandler): ConnectionIO[List[MealFood]] =
     sql"""
       select custom, food_id, meal_id, meal_name, description, amount, energy, protein, carbs, fat, fiber
       from food_in_meal_view

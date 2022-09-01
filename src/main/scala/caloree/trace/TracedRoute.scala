@@ -1,17 +1,20 @@
 package caloree.trace
 
-import caloree.trace.TracedHttpRoute.TracedHttpRoute
-import caloree.trace.TracedRoute.Trace.{PathLeaf, PathNode}
-import cats.data.{Kleisli, Writer}
-import cats.syntax.all._
-import cats.{Monoid, _}
 import org.http4s.Method.{GET, POST}
 import org.http4s.server.Router
 import org.http4s.{HttpRoutes, Method}
 
+import cats.data.{Kleisli, Writer}
+import cats.syntax.all._
+import cats.{Monoid, _}
+
 import scala.annotation.tailrec
 
+import caloree.trace.TracedHttpRoute.TracedHttpRoute
+import caloree.trace.TracedRoute.Trace.{PathLeaf, PathNode}
+
 object TracedRoute {
+  import Trace._
 
   type PathComponents = List[String]
 
@@ -51,34 +54,30 @@ object TracedRoute {
           PathNode -> new backlog with current path as root
           Bottom   -> Returns its root
        */
-      def showSingle(tr: (String, Trace)): Either[List[(String, Trace)], String] =
-        tr match {
-          case (root, Trace.PathNode(n, s)) =>
-            val name = n.foldLeft(root)(merge("/"))
-            Left(s.map((name, _)))
+      val showSingle: ((String, Trace)) => Either[List[(String, Trace)], String] = {
+        case (root, Trace.PathNode(n, s)) =>
+          val name = n.foldLeft(root)(merge("/"))
+          Left(s.map((name, _)))
 
-          case (root, Trace.PathLeaf(m, q, n)) =>
-            val name       = n.foldLeft(root)(merge("/"))
-            val withParams = q.foldLeft(s"$m -> $name ? ")(merge(" "))
-            Right(withParams)
+        case (root, Trace.PathLeaf(m, q, n)) =>
+          val name       = n.foldLeft(root)(merge("/"))
+          val withParams = q.foldLeft(s"$m -> $name ? ")(merge(" "))
+          Right(withParams)
 
-          case (root, Trace.Bottom) => Right(root)
-        }
+        case (root, Trace.Bottom) => Right(root)
+      }
 
       @tailrec
       def loop(l: List[(String, Trace)], backlog: List[(String, Trace)], acc: List[String]): List[String] =
-        l match {
-          case head :: tail =>
+        (l, backlog) match {
+          case (head :: tail, b) =>
             showSingle(head) match {
-              case Left(value)  => loop(tail, value.concat(backlog), acc)
-              case Right(value) => loop(tail, backlog, value :: acc)
+              case Left(value)  => loop(tail, value.concat(b), acc)
+              case Right(value) => loop(tail, b, value :: acc)
             }
 
-          case Nil =>
-            backlog match {
-              case Nil => acc
-              case b   => loop(b, Nil, acc)
-            }
+          case (Nil, Nil) => acc
+          case (Nil, b)   => loop(b, Nil, acc)
         }
 
       showSingle(("root", t)) match {
@@ -92,27 +91,26 @@ object TracedRoute {
     def empty: Trace = Trace.Bottom
 
     def combine(x: Trace, y: Trace): Trace = (x, y) match {
-      case (Trace.PathNode(n1, s1), Trace.PathNode(n2, s2)) =>
+      case (PathNode(n1, s1), PathNode(n2, s2)) =>
         val Diff(common, (d1, d2)) = diff(n1, n2)
-        Trace.PathNode(common, List(Trace.PathNode(d1, s1), Trace.PathNode(d2, s2)))
+        PathNode(common, List(PathNode(d1, s1), PathNode(d2, s2)))
 
-      case (Trace.PathNode(n1, s1), Trace.PathLeaf(m, q, n2)) =>
+      case (PathNode(n1, s1), PathLeaf(m, q, n2)) =>
         val Diff(common, (d1, d2)) = diff(n1, n2)
-        Trace.PathNode(common, List(Trace.PathNode(d1, s1), Trace.PathLeaf(m, q, d2)))
+        PathNode(common, List(PathNode(d1, s1), PathLeaf(m, q, d2)))
 
-      case (Trace.PathLeaf(m, q, n1), Trace.PathNode(n2, s2)) =>
+      case (PathLeaf(m, q, n1), PathNode(n2, s2)) =>
         val Diff(common, (d1, d2)) = diff(n1, n2)
-        Trace.PathNode(common, List(Trace.PathLeaf(m, q, d1), Trace.PathNode(d2, s2)))
+        PathNode(common, List(PathLeaf(m, q, d1), PathNode(d2, s2)))
 
-      case (Trace.PathLeaf(m1, q1, n1), Trace.PathLeaf(m2, q2, n2)) =>
+      case (PathLeaf(m1, q1, n1), PathLeaf(m2, q2, n2)) =>
         val Diff(common, (d1, d2)) = diff(n1, n2)
-        Trace.PathNode(common, List(Trace.PathLeaf(m1, q1, d1), Trace.PathLeaf(m2, q2, d2)))
+        PathNode(common, List(PathLeaf(m1, q1, d1), PathLeaf(m2, q2, d2)))
 
       case (t, Trace.Bottom) => t
       case (Trace.Bottom, t) => t
     }
   }
-
 
   object Route {
     type TracedMapping[F[_]] = (String, TracedHttpRoute[F])
@@ -132,7 +130,6 @@ object TracedRoute {
 
   }
 
-
   def tracedMiddleware[F[_], A, B, C, D](mid: Kleisli[F, A, B] => Kleisli[F, C, D])
       : Writer[Trace, Kleisli[F, A, B]] => Writer[Trace, Kleisli[F, C, D]] = _.map(mid(_))
 
@@ -147,7 +144,8 @@ object Main extends App {
       PathNode(
         List("foods"),
         List(
-          PathLeaf(GET, List("page"), List("gett")),
+          PathLeaf(GET, List("page"), List("get")),
+          PathLeaf(GET, List("page"), List("get")),
           PathNode(
             List("custom"),
             List(
@@ -164,6 +162,9 @@ object Main extends App {
     )
   )
 
-  println(Show[Trace].show(tr))
+  val tr1: Trace = PathNode(List("food", "custom", "get"), List(PathLeaf(GET, Nil, List("idk"))))
+  val tr2: Trace = PathNode(List("food", "custom", "post"), List(PathLeaf(GET, Nil, List("idk"))))
+
+  println(tr1 |+| tr2)
 
 }

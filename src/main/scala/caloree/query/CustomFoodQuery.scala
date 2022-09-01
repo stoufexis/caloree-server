@@ -7,9 +7,7 @@ import doobie._
 import doobie.implicits._
 
 object CustomFoodQuery {
-  private implicit val han: LogHandler = LogHandler.jdkLogHandler
-
-  def customFoodById(id: EntityId[CustomFood], user: EntityId[User]): ConnectionIO[Option[CustomFood]] =
+  def customFoodById(id: EntityId[CustomFood], user: EntityId[User])(implicit lh: LogHandler): ConnectionIO[Option[CustomFood]] =
     sql"""
       select id, user_id, description, energy, protein, carbs, fat, fiber
       from custom_food_with_nutrients_view

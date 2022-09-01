@@ -7,9 +7,7 @@ import caloree.model.Food
 import caloree.model.Types._
 
 object FoodQuery {
-  private implicit val han: LogHandler = LogHandler.jdkLogHandler
-
-  def foodById(id: EntityId[Food], amount: Grams): ConnectionIO[Option[Food]] =
+  def foodById(id: EntityId[Food], amount: Grams)(implicit lh: LogHandler): ConnectionIO[Option[Food]] =
     sql"""
       select
           id,

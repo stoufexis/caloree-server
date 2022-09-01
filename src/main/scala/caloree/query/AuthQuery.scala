@@ -7,9 +7,7 @@ import doobie.implicits._
 import doobie.util.log.{ExecFailure, ProcessingFailure, Success}
 
 object AuthQuery {
-  private implicit val han: LogHandler = LogHandler.jdkLogHandler
-
-  def verifyCredentials(username: Username, accessToken: AccessToken): ConnectionIO[Option[User]] =
+  def verifyCredentials(username: Username, accessToken: AccessToken)(implicit lh: LogHandler): ConnectionIO[Option[User]] =
     sql"""
       select s.id, s.username, s.token
       from (select u.id, u.username, token.token
@@ -23,7 +21,7 @@ object AuthQuery {
       .query[User]
       .option
 
-  def getToken(username: Username, password: Password): ConnectionIO[AccessToken] =
+  def getToken(username: Username, password: Password)(implicit lh: LogHandler): ConnectionIO[AccessToken] =
     sql"""
       insert into token(user_id)
       select id

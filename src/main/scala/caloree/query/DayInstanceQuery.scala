@@ -12,9 +12,7 @@ import caloree.model.{CustomFood, Food, Meal, User}
 import java.time.LocalDate
 
 object DayInstanceQuery {
-  private implicit val han: LogHandler = LogHandler.jdkLogHandler
-
-  def incrementTransaction(date: LocalDate, user: EntityId[User]): ConnectionIO[EntityId[TX]] =
+  def incrementTransaction(date: LocalDate, user: EntityId[User])(implicit lh: LogHandler): ConnectionIO[EntityId[TX]] =
     sql"""
       insert into meal_tx (day, "user")
       values ($date, $user)
@@ -27,7 +25,7 @@ object DayInstanceQuery {
       user: EntityId[User],
       date: LocalDate,
       tx: EntityId[TX]
-  ): ConnectionIO[EntityId[Meal]] =
+  )(implicit lh: LogHandler): ConnectionIO[EntityId[Meal]] =
     sql"""
       insert into meal(name, user_id, day, tx)
       values ($description, $user, $date, $tx)
@@ -35,7 +33,8 @@ object DayInstanceQuery {
       .update
       .withUniqueGeneratedKeys("id")
 
-  def insertFoodToMeal(food: EntityId[Food], meal: EntityId[Meal], grams: Grams): ConnectionIO[Int] =
+  def insertFoodToMeal(food: EntityId[Food], meal: EntityId[Meal], grams: Grams)(implicit
+      lh: LogHandler): ConnectionIO[Int] =
     sql"""
       insert into meal_food(food_id, meal_id, amount)
       values ($food , $meal, $grams)
@@ -47,7 +46,8 @@ object DayInstanceQuery {
       meal: EntityId[Meal],
       grams: Grams,
       customFood: EntityId[CustomFood],
-      user: EntityId[User]): ConnectionIO[Int] =
+      user: EntityId[User])(
+      implicit lh: LogHandler): ConnectionIO[Int] =
     sql"""
       insert into meal_custom_food(custom_food_id, meal_id, amount)
       select id, $meal, $grams
@@ -61,7 +61,11 @@ object DayInstanceQuery {
   type FoodWithAmount = (Either[EntityId[CustomFood], EntityId[Food]], Grams)
   type MealWithFoods  = (Description, List[FoodWithAmount])
 
-  def mealFoodsTransaction(user: EntityId[User], date: LocalDate, meals: List[MealWithFoods]): ConnectionIO[Int] =
+  def mealFoodsTransaction(
+      user: EntityId[User],
+      date: LocalDate,
+      meals: List[MealWithFoods])(
+      implicit lh: LogHandler): ConnectionIO[Int] =
     for {
       txId  <- incrementTransaction(date, user)
       lines <- meals.traverse { case (desc, foods) =>

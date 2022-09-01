@@ -25,20 +25,19 @@ object Routes {
   object Limit         extends QueryParamDecoderMatcher[Int]("limit")
   object FoodIdP       extends QueryParamDecoderMatcher[EntityId[Food]]("food_id")
   object DateP         extends QueryParamDecoderMatcher[LocalDate]("date")
-  object MealIdP       extends QueryParamDecoderMatcher[EntityId[Meal]]("meal_id")
   object GramsP        extends QueryParamDecoderMatcher[Grams]("grams")
 
   def routes[F[_]: Concurrent](
       implicit
       auth: AuthMiddleware[F, User],
       r1: Execute.Optional[F, (Username, AccessToken), User],
-      r4: Execute.Optional[F, (EntityId[CustomFood], EntityId[User]), CustomFood],
-      r6: Execute.Optional[F, (EntityId[Food], Grams), Food],
-      r2: Execute.Unique[F, (Username, Password), AccessToken],
-      r8: Execute.Unique[F, (EntityId[User], LocalDate, List[MealWithFoods]), Int],
-      r3: Execute.Many[F, (Description, EntityId[User]), CustomFoodPreview],
-      r5: Execute.Many[F, Description, FoodPreview],
-      r7: Execute.Many[F, (EntityId[User], LocalDate), MealFood]
+      r2: Execute.Optional[F, (EntityId[CustomFood], EntityId[User]), CustomFood],
+      r3: Execute.Optional[F, (EntityId[Food], Grams), Food],
+      r4: Execute.Unique[F, (Username, Password), AccessToken],
+      r5: Execute.Unique[F, (EntityId[User], LocalDate, List[MealWithFoods]), Int],
+      r6: Execute.Many[F, (Description, EntityId[User]), CustomFoodPreview],
+      r7: Execute.Many[F, Description, FoodPreview],
+      r8: Execute.Many[F, (EntityId[User], LocalDate), MealFood]
   ): HttpRoutes[F] = Router(
     "auth"        -> AuthRoutes.routes,
     "meal-food"   -> auth(MealFoodRoutes.routes),
