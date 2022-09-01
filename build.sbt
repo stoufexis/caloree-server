@@ -11,18 +11,20 @@ lazy val root = (project in file("."))
   .settings(
     name := "caloree-server-2",
     libraryDependencies ++= Seq(
-      "io.circe"      %% "circe-core"          % circeVersion,
-      "io.circe"      %% "circe-generic"       % circeVersion,
-      "io.circe"      %% "circe-parser"        % circeVersion,
-      "org.http4s"    %% "http4s-core"         % http4sVersion,
-      "org.http4s"    %% "http4s-dsl"          % http4sVersion,
-      "org.http4s"    %% "http4s-circe"        % http4sVersion,
-      "org.http4s"    %% "http4s-ember-server" % http4sVersion,
-      "io.estatico"   %% "newtype"             % newtypeVersion,
-      "org.tpolecat"  %% "doobie-core"         % doobieVersion,
-      "org.tpolecat"  %% "doobie-postgres"     % doobieVersion,
-      "org.typelevel" %% "log4cats-slf4j"      % "2.4.0",
-      "ch.qos.logback" % "logback-classic"     % "1.2.11" % Runtime
+      "io.circe"              %% "circe-core"          % circeVersion,
+      "io.circe"              %% "circe-generic"       % circeVersion,
+      "io.circe"              %% "circe-parser"        % circeVersion,
+      "org.http4s"            %% "http4s-core"         % http4sVersion,
+      "org.http4s"            %% "http4s-dsl"          % http4sVersion,
+      "org.http4s"            %% "http4s-circe"        % http4sVersion,
+      "org.http4s"            %% "http4s-ember-server" % http4sVersion,
+      "io.estatico"           %% "newtype"             % newtypeVersion,
+      "org.tpolecat"          %% "doobie-core"         % doobieVersion,
+      "org.tpolecat"          %% "doobie-postgres"     % doobieVersion,
+      "org.typelevel"         %% "log4cats-slf4j"      % "2.4.0",
+      "ch.qos.logback"         % "logback-classic"     % "1.2.11" % Runtime,
+      "org.typelevel"         %% "simulacrum"          % "1.0.1",
+      "com.github.pureconfig" %% "pureconfig"          % "0.17.1"
     ),
     scalacOptions ++= Seq("-Ymacro-annotations"),
     addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full)

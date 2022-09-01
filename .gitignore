@@ -7,3 +7,4 @@ tokens
 tmp/
 /src/main/scala/main/
 tmp.scala
+*.conf

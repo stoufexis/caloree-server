@@ -8,32 +8,32 @@ import cats.effect.{IO, MonadCancelThrow}
 
 import caloree.model.Types.Page
 
-sealed trait Execute[F[_], Params, A]
+sealed trait Run[F[_], Params, A]
 
-object Execute {
+object Run {
 
-  trait Optional[F[_], Params, A] extends Execute[F, Params, A] {
-    def execute(p: Params): F[Option[A]]
+  trait Optional[F[_], Params, A] extends Run[F, Params, A] {
+    def run(p: Params): F[Option[A]]
   }
 
-  trait Unique[F[_], Params, A] extends Execute[F, Params, A] {
-    def execute(p: Params): F[A]
+  trait Unique[F[_], Params, A] extends Run[F, Params, A] {
+    def run(p: Params): F[A]
   }
 
-  trait Many[F[_], Params, A] extends Execute[F, Params, A] {
-    def execute(p: Params, page: Page, limit: Int): F[List[A]]
+  trait Many[F[_], Params, A] extends Run[F, Params, A] {
+    def run(p: Params, page: Page, limit: Int): F[List[A]]
   }
 
   def option[F[_]: MonadCancelThrow: Transactor, P, A](
-      q: P => ConnectionIO[Option[A]]): Execute.Optional[F, P, A] =
+      q: P => ConnectionIO[Option[A]]): Run.Optional[F, P, A] =
     q(_).transact(implicitly[Transactor[F]])
 
   def unique[F[_]: MonadCancelThrow: Transactor, P, A](
-      q: P => ConnectionIO[A]): Execute.Unique[F, P, A] =
+      q: P => ConnectionIO[A]): Run.Unique[F, P, A] =
     q(_).transact(implicitly[Transactor[F]])
 
   def many[F[_]: MonadCancelThrow: Transactor, P, A](
-      q: (P, Page, Int) => ConnectionIO[List[A]]): Execute.Many[F, P, A] =
+      q: (P, Page, Int) => ConnectionIO[List[A]]): Run.Many[F, P, A] =
     q(_, _, _).transact(implicitly[Transactor[F]])
 
 }

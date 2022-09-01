@@ -10,7 +10,7 @@ import cats.effect.kernel.Concurrent
 import caloree.model.Types._
 import caloree.model._
 import caloree.query.DayInstanceQuery.MealWithFoods
-import caloree.query.Execute
+import caloree.query.Run
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -30,14 +30,14 @@ object Routes {
   def routes[F[_]: Concurrent](
       implicit
       auth: AuthMiddleware[F, User],
-      r1: Execute.Optional[F, (Username, AccessToken), User],
-      r2: Execute.Optional[F, (EntityId[CustomFood], EntityId[User]), CustomFood],
-      r3: Execute.Optional[F, (EntityId[Food], Grams), Food],
-      r4: Execute.Unique[F, (Username, Password), AccessToken],
-      r5: Execute.Unique[F, (EntityId[User], LocalDate, List[MealWithFoods]), Int],
-      r6: Execute.Many[F, (Description, EntityId[User]), CustomFoodPreview],
-      r7: Execute.Many[F, Description, FoodPreview],
-      r8: Execute.Many[F, (EntityId[User], LocalDate), MealFood]
+      r1: Run.Optional[F, (Username, AccessToken), User],
+      r2: Run.Optional[F, (EntityId[CustomFood], EntityId[User]), CustomFood],
+      r3: Run.Optional[F, (EntityId[Food], Grams), Food],
+      r4: Run.Unique[F, (Username, Password), AccessToken],
+      r5: Run.Unique[F, (EntityId[User], LocalDate, List[MealWithFoods]), Int],
+      r6: Run.Many[F, (Description, EntityId[User]), CustomFoodPreview],
+      r7: Run.Many[F, Description, FoodPreview],
+      r8: Run.Many[F, (EntityId[User], LocalDate), MealFood]
   ): HttpRoutes[F] = Router(
     "auth"        -> AuthRoutes.routes,
     "meal-food"   -> auth(MealFoodRoutes.routes),

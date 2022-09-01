@@ -5,73 +5,67 @@ import doobie.util.transactor.Transactor
 
 import org.http4s.HttpApp
 import org.http4s.Response.http4sKleisliResponseSyntaxOptionT
-import org.http4s.ember.server._
 import org.http4s.server.AuthMiddleware
 import org.http4s.server.middleware.Logger
 
 import cats.effect.{IO, IOApp}
+import cats.syntax.all._
 
 import caloree.auth.AuthUser
+import caloree.configuration.{ApiConfig, Config, DBConfig}
 import caloree.logging.DoobieLogger
 import caloree.model.Types._
 import caloree.model._
 import caloree.query.DayInstanceQuery.MealWithFoods
-import caloree.query.{Execute, Repos}
+import caloree.query.Repos._
+import caloree.query.Run
+import caloree.query.Run._
 import caloree.routes.Routes
 
 import java.time.LocalDate
 
-import com.comcast.ip4s._
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
+import pureconfig._
+import pureconfig.generic.auto._
 
 object Main extends IOApp.Simple {
-  def server(routes: HttpApp[IO]): IO[Nothing] =
-    EmberServerBuilder
-      .default[IO]
-      .withHost(ipv4"0.0.0.0")
-      .withPort(port"8080")
-      .withHttpApp(routes)
-      .build
-      .use(_ => IO.never)
+  implicit val logging: LoggerFactory[IO] = Slf4jFactory[IO]
+  implicit val doobieLogger: LogHandler   = DoobieLogger.apply
 
-  implicit val xa: Transactor[IO] = Transactor.fromDriverManager[IO](
-    driver = "org.postgresql.Driver",
-    url = "jdbc:postgresql://localhost:5433/postgres",
-    user = "postgres",
-    pass = "postgres"
-  )
+  val log: HttpApp[IO] => HttpApp[IO] = Logger.httpApp[IO](logHeaders = false, logBody = true)(_)
 
-  implicit val logging: LoggerFactory[IO]     = Slf4jFactory[IO]
-  implicit val doobieLogger: LogHandler       = DoobieLogger.apply
-  implicit val auth: AuthMiddleware[IO, User] = AuthUser[IO]
+  val app: IO[Nothing] =
+    ConfigSource.default.load[Config]
+      .map { case Config(db, api) =>
+        implicit val xa: Transactor[IO]                                  = DBConfig.transactor(db)
+        implicit def r1: Optional[IO, (Username, AccessToken), User]     = verifyCredentialsRepo[IO]
+        implicit def r2: Unique[IO, (Username, Password), AccessToken]   = getTokenRepo[IO]
+        implicit def r5: Many[IO, Description, FoodPreview]              = foodsPreviewByDescriptionRepo[IO]
+        implicit def r6: Optional[IO, (EntityId[Food], Grams), Food]     = foodByIdRepo[IO]
+        implicit def r7: Many[IO, (EntityId[User], LocalDate), MealFood] = mealFoodByUserAndDateRepo[IO]
 
-  implicit def r1: Execute.Optional[IO, (Username, AccessToken), User] =
-    Repos.verifyCredentialsRepo[IO]
+        implicit def r4: Optional[IO, (EntityId[CustomFood], EntityId[User]), CustomFood] =
+          customFoodByIdRepo[IO]
 
-  implicit def r2: Execute.Unique[IO, (Username, Password), AccessToken] =
-    Repos.getTokenRepo[IO]
+        implicit def r8: Unique[IO, (EntityId[User], LocalDate, List[MealWithFoods]), Int] =
+          mealFoodTransactionRepos[IO]
 
-  implicit def r3: Execute.Many[IO, (Description, EntityId[User]), CustomFoodPreview] =
-    Repos.customFoodsPreviewByDescriptionRepo[IO]
+        implicit def r3: Many[IO, (Description, EntityId[User]), CustomFoodPreview] =
+          customFoodsPreviewByDescriptionRepo[IO]
 
-  implicit def r4: Execute.Optional[IO, (EntityId[CustomFood], EntityId[User]), CustomFood] =
-    Repos.customFoodByIdRepo[IO]
+        implicit val auth: AuthMiddleware[IO, User] = AuthUser[IO]
 
-  implicit def r5: Execute.Many[IO, Description, FoodPreview] =
-    Repos.foodsPreviewByDescriptionRepo[IO]
+        val app: HttpApp[IO] = log(Routes.routes[IO].orNotFound)
 
-  implicit def r6: Execute.Optional[IO, (EntityId[Food], Grams), Food] =
-    Repos.foodByIdRepo[IO]
+        ApiConfig.server[IO](api)(app)
+          .use(_ => IO.never)
+      }
+      .left
+      .map(x => new Exception(x.prettyPrint()))
+      .liftTo[IO]
+      .flatten
 
-  implicit def r7: Execute.Many[IO, (EntityId[User], LocalDate), MealFood] =
-    Repos.mealFoodByUserAndDateRepo[IO]
+  def run: IO[Unit] = app
 
-  implicit def r8: Execute.Unique[IO, (EntityId[User], LocalDate, List[MealWithFoods]), Int] =
-    Repos.mealFoodTransactionRepos[IO]
-
-  val app: HttpApp[IO]    = Routes.routes[IO].orNotFound
-  val logged: HttpApp[IO] = Logger.httpApp[IO](logHeaders = false, logBody = true)(app)
-
-  def run: IO[Unit] = server(logged)
 }

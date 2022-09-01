@@ -8,11 +8,11 @@ import cats.Monad
 import cats.syntax.all._
 
 import caloree.model.Types.{AccessToken, Password, Username}
-import caloree.query.Execute
+import caloree.query.Run
 import caloree.util._
 
 object AuthRoutes {
-  def routes[F[_]: Monad](implicit get: Execute.Unique[F, (Username, Password), AccessToken]): HttpRoutes[F] = {
+  def routes[F[_]: Monad](implicit get: Run.Unique[F, (Username, Password), AccessToken]): HttpRoutes[F] = {
     val dsl = Http4sDsl[F]
     import dsl._
 
@@ -21,7 +21,7 @@ object AuthRoutes {
         for {
           headers <-
             extractHeaders(req.headers, ("USER-ID", "PASS"), Username(_), Password(_))
-              .map(get.execute)
+              .map(get.run)
               .traverse(identity)
 
           response <- headers match {

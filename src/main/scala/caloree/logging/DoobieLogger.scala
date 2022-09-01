@@ -24,7 +24,6 @@ object DoobieLogger {
 
   def apply: LogHandler = {
     val logger = getLogger
-
     LogHandler {
       case log.Success(_, _, e1, e2)              => logger.info(onSuccess(e1, e2))
       case log.ProcessingFailure(_, _, e1, e2, t) => logger.error(t)(onProcessFailure(e1, e2))
