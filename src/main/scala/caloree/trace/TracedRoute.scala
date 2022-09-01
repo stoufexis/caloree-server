@@ -1,13 +1,13 @@
-package caloree
+package caloree.trace
 
-import caloree.TracedHttpRoute.TracedHttpRoute
-import caloree.TracedRoute.Trace.{PathLeaf, PathNode}
-import cats.{Monoid, _}
+import caloree.trace.TracedHttpRoute.TracedHttpRoute
+import caloree.trace.TracedRoute.Trace.{PathLeaf, PathNode}
 import cats.data.{Kleisli, Writer}
 import cats.syntax.all._
+import cats.{Monoid, _}
 import org.http4s.Method.{GET, POST}
 import org.http4s.server.Router
-import org.http4s.{AuthedRequest, AuthedRoutes, HttpRoutes, Method, Request, Response}
+import org.http4s.{HttpRoutes, Method}
 
 import scala.annotation.tailrec
 

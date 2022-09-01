@@ -1,13 +1,8 @@
-package caloree
+package caloree.trace
 
+import cats.Applicative
 import org.http4s.dsl.impl.QueryParamDecoderMatcher
-import org.http4s.{EntityDecoder, EntityEncoder, Headers, QueryParamDecoder, Request}
-
-import io.circe.DecodingFailure
-
-import cats.{Applicative, MonadThrow}
-
-import caloree.routes.dto.MealFoodPayload
+import org.http4s.{QueryParamDecoder, Request}
 
 sealed trait ExtractParams[F[_], A] {
   val strings: List[String]

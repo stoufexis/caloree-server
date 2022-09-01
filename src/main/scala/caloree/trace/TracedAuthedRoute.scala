@@ -1,17 +1,9 @@
-package caloree
+package caloree.trace
 
-import org.http4s.Method.{GET, POST}
-import org.http4s.server.Router
-import org.http4s.{AuthedRequest, AuthedRoutes, HttpRoutes, Method, Request, Response}
-
-import cats.data.{Kleisli, Writer}
-import cats.syntax.all._
-import cats.{Monoid, _}
-
-import caloree.ExtractParams
-import caloree.TracedRoute.Trace.{PathLeaf, PathNode}
-
-import TracedRoute._
+import caloree.trace.TracedRoute.Trace
+import org.http4s.{AuthedRequest, AuthedRoutes, Method, Request, Response}
+import cats.Monad
+import cats.data.Writer
 
 //noinspection DuplicatedCode
 object TracedAuthedRoute {
