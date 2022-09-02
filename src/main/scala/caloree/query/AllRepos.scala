@@ -2,46 +2,52 @@ package caloree.query
 
 import doobie.LogHandler
 import doobie.util.transactor.Transactor
-
 import cats.effect.MonadCancelThrow
-
 import caloree.model.Types.{AccessToken, Description, EntityId, Grams, Page, Password, Username}
-import caloree.model.{CustomFood, CustomFoodPreview, Food, FoodPreview, MealFood, User}
-import caloree.query.DayInstanceQuery.MealWithFoods
+import caloree.model.{CustomFood, CustomFoodPreview, Food, FoodPreview, Meal, MealFood, User}
+import caloree.query.MealFoodQuery.{CustomFoodAndMealParams, FoodAndMealParams}
 
 import java.time.LocalDate
 
-object Repos {
-  def verifyCredentialsRepo[F[_]: MonadCancelThrow: Transactor](
+object AllRepos {
+  implicit def verifyCredentialsRepo[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Optional[F, (Username, AccessToken), User] =
     Run.option((AuthQuery.verifyCredentials _).tupled)
 
-  def getTokenRepo[F[_]: MonadCancelThrow: Transactor](
+  implicit def getTokenRepo[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Unique[F, (Username, Password), AccessToken] =
     Run.unique((AuthQuery.getToken _).tupled)
 
-  def customFoodsPreviewByDescriptionRepo[F[_]: MonadCancelThrow: Transactor](
+  implicit def customFoodsPreviewByDescriptionRepo[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Many[F, (Description, EntityId[User]), CustomFoodPreview] =
     Run.many { case ((d, u), p, l) => CustomFoodPreviewQuery.customFoodsPreviewByDescription(d, u, p, l) }
 
-  def customFoodByIdRepo[F[_]: MonadCancelThrow: Transactor](
+  implicit def customFoodByIdRepo[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Optional[F, (EntityId[CustomFood], EntityId[User]), CustomFood] =
     Run.option((CustomFoodQuery.customFoodById _).tupled)
 
-  def foodsPreviewByDescriptionRepo[F[_]: MonadCancelThrow: Transactor](
+  implicit def foodsPreviewByDescriptionRepo[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Many[F, Description, FoodPreview] =
     Run.many { case (desc, page, limit) => FoodPreviewQuery.foodsPreviewByDescription(desc, page, limit) }
 
-  def foodByIdRepo[F[_]: MonadCancelThrow: Transactor](
+  implicit def foodByIdRepo[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Optional[F, (EntityId[Food], Grams), Food] =
     Run.option((FoodQuery.foodById _).tupled)
 
-  def mealFoodByUserAndDateRepo[F[_]: MonadCancelThrow: Transactor](
+  implicit def mealFoodByUserAndDateRepo[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Many[F, (EntityId[User], LocalDate), MealFood] =
     Run.many { case ((u, d), page, limit) => MealFoodQuery.mealFoodByUserAndDate(u, d, page, limit) }
 
-  def mealFoodTransactionRepos[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Unique[F, (EntityId[User], LocalDate, List[MealWithFoods]), Int] =
-    Run.unique((DayInstanceQuery.mealFoodsTransaction _).tupled)
+  implicit def mealFoodTransactionRepos[F[_]: MonadCancelThrow: Transactor](
+      implicit lh: LogHandler): Run.Unique[F, (EntityId[Food], EntityId[Meal], Grams), Int] =
+    Run.unique((MealFoodQuery.insertMealFood _).tupled)
+
+  implicit def insertFoodAndMealRepo[F[_]: MonadCancelThrow: Transactor](
+      implicit lh: LogHandler): Run.Unique[F, FoodAndMealParams, Int] =
+    Run.unique((MealFoodQuery.insertFoodAndMeal _).tupled)
+
+  implicit def insertCustomFoodAndMealRepo[F[_]: MonadCancelThrow: Transactor](
+      implicit lh: LogHandler): Run.Unique[F, CustomFoodAndMealParams, Int] =
+    Run.unique((MealFoodQuery.insertCustomFoodAndMeal _).tupled)
 
 }

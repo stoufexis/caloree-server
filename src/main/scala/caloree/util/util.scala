@@ -2,14 +2,11 @@ package caloree
 
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.dsl.Http4sDsl
-import org.http4s.{Headers, Response}
-
+import org.http4s.{DecodeFailure, Headers, Response}
 import io.circe.syntax.EncoderOps
 import io.circe.{Encoder => CirceEncoder}
-
 import cats.syntax.all._
-import cats.{Applicative, FlatMap, Monad}
-
+import cats.{Monad, MonadError}
 import org.typelevel.ci.CIString
 
 package object util {

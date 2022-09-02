@@ -8,8 +8,8 @@ import cats.Monad
 import caloree.model.Types.{Description, EntityId, Page}
 import caloree.model.{CustomFood, CustomFoodPreview, User}
 import caloree.query.Run
-import caloree.routes.Routes._
 import caloree.util._
+import QParams._
 
 object CustomFoodRoutes {
   def routes[F[_]: Monad](

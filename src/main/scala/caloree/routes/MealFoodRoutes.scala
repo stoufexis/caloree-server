@@ -1,28 +1,29 @@
 package caloree.routes
 
+import org.http4s.EntityDecoder
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.dsl.Http4sDsl
 import org.http4s.{AuthedRoutes, DecodeFailure, EntityDecoder, EntityEncoder}
 
 import cats.effect.kernel.Concurrent
 import cats.syntax.all._
-import cats.{Monad, MonadError, MonadThrow}
 
-import caloree.model.Types.EntityId
-import caloree.model.{MealFood, User}
-import caloree.query.DayInstanceQuery.MealWithFoods
+import caloree.model.Types.{EntityId, Grams}
+import caloree.model.{Food, Meal, MealFood, User}
 import caloree.query.Run
-import caloree.routes.Routes.{DateP, Limit, PageP}
 import caloree.routes.dto.MealFoodPayload
-import caloree.util.ToResponseListSyntax
+import caloree.util._
 
 import java.time.LocalDate
 
+import QParams._
+
 object MealFoodRoutes {
-  def routes[F[_]: MonadThrow: EntityEncoder[*[_], MealFoodPayload]: EntityDecoder[*[_], MealFoodPayload]](
+
+  def routes[F[_]: Concurrent](
       implicit
       get: Run.Many[F, (EntityId[User], LocalDate), MealFood],
-      di: Run.Unique[F, (EntityId[User], LocalDate, List[MealWithFoods]), Int]): AuthedRoutes[User, F] = {
+      add: Run.Unique[F, (EntityId[Food], EntityId[Meal], Grams), Int]): AuthedRoutes[User, F] = {
     val dsl = Http4sDsl[F]
     import dsl._
 
@@ -33,13 +34,12 @@ object MealFoodRoutes {
       case req @ POST -> _ as u =>
         req.req
           .as[MealFoodPayload]
-          .flatMap { case MealFoodPayload(date, mfs) =>
-            di.run((u.id, date, mfs)).flatMap(Ok(_))
+          .flatMap { case MealFoodPayload(fid, mid, amount) =>
+            add.run((fid, mid, amount)).flatMap(Ok(_))
           }
           .recoverWith {
             case e: DecodeFailure => BadRequest(e.getMessage())
           }
     }
   }
-
 }
