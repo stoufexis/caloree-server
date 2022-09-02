@@ -10,7 +10,7 @@ import caloree.model.{Food, FoodPreview, User}
 import caloree.query.Run
 import caloree.util._
 
-import QParams._
+import Params._
 
 object FoodRoutes {
   def routes[F[_]: Monad](

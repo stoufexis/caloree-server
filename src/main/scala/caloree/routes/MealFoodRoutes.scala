@@ -14,11 +14,13 @@ import caloree.model.Types.{EntityId, Grams}
 import caloree.model.{CustomFood, Food, Meal, MealFood, User}
 import caloree.query.MealFoodQuery.{CustomFoodAndMealParams, FoodAndMealParams}
 import caloree.query.Run
-import caloree.routes.dto.{CustomFoodAndMealPayload, FoodAndMealPayload, MealFoodDto}
+import caloree.routes.Params.{DateP, Limit, PageP}
+import caloree.routes.dto.MealFoodDto
+import caloree.util._
 
 import java.time.LocalDate
 
-object FoodAndMealRoutes {
+object MealFoodRoutes {
   def routes[F[_]: Concurrent](
       implicit
       get: Run.Many[F, (EntityId[User], LocalDate), MealFood],
@@ -31,18 +33,18 @@ object FoodAndMealRoutes {
     import dsl._
 
     AuthedRoutes.of {
+      case GET -> _ :? DateP(date) +& PageP(page) +& Limit(limit) as u =>
+        get.run((u.id, date), page, limit).asResponse
+
       case req @ POST -> _ as u =>
         req.req
           .as[MealFoodDto]
-          .flatMap { case MealFoodDto(foodId, amount, meal, date) =>
-            val response = (foodId, meal) match {
-              case (Right(fid), Left(mid)) => addF.run((fid, mid, amount))
-              case (Left(cfid), Left(mid)) => addCF.run((cfid, mid, amount, u.id))
-              case (Right(a), Right(b))    => addFm.run((a, amount, b, u.id, date))
-              case (Left(a), Right(b))     => addCfm.run((a, amount, b, u.id, date))
-            }
-            response.flatMap(Ok(_))
-          }
+          .flatMap {
+            case MealFoodDto(Right(fid), amount, Left(mid), _) => addF.run((fid, mid, amount))
+            case MealFoodDto(Left(cfid), amount, Left(mid), _) => addCF.run((cfid, mid, amount, u.id))
+            case MealFoodDto(Right(a), amount, Right(b), date) => addFm.run((a, amount, b, u.id, date))
+            case MealFoodDto(Left(a), amount, Right(b), date)  => addCfm.run((a, amount, b, u.id, date))
+          } *> Ok()
     }
   }
 }
