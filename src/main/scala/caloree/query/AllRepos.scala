@@ -2,7 +2,9 @@ package caloree.query
 
 import doobie.LogHandler
 import doobie.util.transactor.Transactor
+
 import cats.effect.MonadCancelThrow
+
 import caloree.model.Types.{AccessToken, Description, EntityId, Grams, Page, Password, Username}
 import caloree.model.{CustomFood, CustomFoodPreview, Food, FoodPreview, Meal, MealFood, User}
 import caloree.query.MealFoodQuery.{CustomFoodAndMealParams, FoodAndMealParams}
@@ -38,9 +40,13 @@ object AllRepos {
       implicit lh: LogHandler): Run.Many[F, (EntityId[User], LocalDate), MealFood] =
     Run.many { case ((u, d), page, limit) => MealFoodQuery.mealFoodByUserAndDate(u, d, page, limit) }
 
-  implicit def mealFoodTransactionRepos[F[_]: MonadCancelThrow: Transactor](
+  implicit def mealFoodRepos[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Unique[F, (EntityId[Food], EntityId[Meal], Grams), Int] =
     Run.unique((MealFoodQuery.insertMealFood _).tupled)
+
+  implicit def mealCustomFoodRepos[F[_]: MonadCancelThrow: Transactor](
+      implicit lh: LogHandler): Run.Unique[F, (EntityId[CustomFood], EntityId[Meal], Grams, EntityId[User]), Int] =
+    Run.unique((MealFoodQuery.insertMealCustomFood _).tupled)
 
   implicit def insertFoodAndMealRepo[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Unique[F, FoodAndMealParams, Int] =
