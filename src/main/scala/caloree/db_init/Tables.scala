@@ -70,7 +70,7 @@ object Tables {
             id           bigserial primary key,
             user_id      bigint    not null references "user",
             token        uuid      default gen_random_uuid() not null,
-            generated_at timestamp default (now() AT TIME ZONE 'utc'::text)
+            generated_at timestamp default (now() at time zone 'utc'::text)
         )
       """.update.run
     _ <-
@@ -103,36 +103,20 @@ object Tables {
       )
     """.update.run.as()
 
-  val meal: ConnectionIO[Unit] =
+  val log: ConnectionIO[Unit] =
     sql"""
-      create table meal
-      (
-          id      bigserial primary key,
-          "name"  text   not null,
-          user_id bigint not null references "user",
-          "day"   date   not null
-      )
-    """.update.run.as()
-
-  val mealFood: ConnectionIO[Unit] =
-    sql"""
-      create table meal_food
-      (
-          id      bigserial primary key,
-          food_id bigint  not null references food,
-          meal_id bigint  not null references meal,
-          amount  integer not null
-      )
-    """.update.run.as()
-
-  val mealCustomFood: ConnectionIO[Unit] =
-    sql"""
-      create table meal_custom_food
+      create table "log"
       (
           id             bigserial primary key,
-          custom_food_id bigint not null references custom_food,
-          meal_id        bigint not null references meal,
-          amount         real   not null
+          food_id        bigint    references food,
+          custom_food_id bigint    references custom_food,
+          amount         integer   not null,
+          "day"          date      not null,
+          "quarter"      smallint  not null,
+          user_id        bigint    not null references "user"(id)
+          check ( "quarter" >= 0 and "quarter" < 96),
+          check ((food_id is not null and custom_food_id is null) 
+              or (food_id is null and custom_food_id is not null))
       )
     """.update.run.as()
 
@@ -155,9 +139,7 @@ object Tables {
     _ <- nutrient
     _ <- foodNutrient
     _ <- customFoodNutrient
-    _ <- meal
-    _ <- mealFood
-    _ <- mealCustomFood
+    _ <- log
     _ <- userTargetNutrients
   } yield ()
 }

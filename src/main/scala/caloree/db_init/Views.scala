@@ -41,74 +41,62 @@ object Views {
       group by cf.id
     """.update.run.as()
 
-  val mealFoodAggregatedView: ConnectionIO[Unit] =
+  val logAggregatedView: ConnectionIO[Unit] =
     sql"""
-      create view meal_food_aggregated_view as
-      select food_id, meal_id, sum(amount) as amount from meal_food
-      group by food_id, meal_id
+      create view log_aggregated_view as
+      select food_id, custom_food_id, "day", "quarter", user_id , sum(amount) as amount from "log"
+      group by food_id, custom_food_id, "day", "quarter", user_id
     """.update.run.as()
 
-  val customMealFoodAggregatedView: ConnectionIO[Unit] =
+  val logWithNutrients: ConnectionIO[Unit] =
     sql"""
-      create view meal_custom_food_aggregated_view as
-      select custom_food_id, meal_id, sum(amount) as amount from meal_custom_food
-      group by custom_food_id, meal_id
+        create view log_with_nutrients_view as
+        select food_id,
+               null as custom_food_id,
+               "day",
+               "quarter",
+               f.description,
+               lav.user_id,
+               amount,
+               (fwnv.energy  * (lav.amount / 100))::real as energy,
+               (fwnv.protein * (lav.amount / 100))::real as protein,
+               (fwnv.carbs   * (lav.amount / 100))::real as carbs,
+               (fwnv.fat     * (lav.amount / 100))::real as fat,
+               (fwnv.fiber   * (lav.amount / 100))::real as fiber
+        from log_aggregated_view lav
+            inner join food f on f.id = lav.food_id
+            inner join foods_with_nutrients_view fwnv on fwnv.id = f.id
+        union
+        select null as food_id,
+               custom_food_id,
+               "day",
+               "quarter",
+               cf.description,
+               lav.user_id,
+               amount,
+               (cfwnv.energy  * (lav.amount / 100))::real as energy,
+               (cfwnv.protein * (lav.amount / 100))::real as protein,
+               (cfwnv.carbs   * (lav.amount / 100))::real as carbs,
+               (cfwnv.fat     * (lav.amount / 100))::real as fat,
+               (cfwnv.fiber   * (lav.amount / 100))::real as fiber
+        from log_aggregated_view lav
+            inner join custom_food cf on cf.id = lav.custom_food_id
+            inner join custom_food_with_nutrients_view cfwnv on cfwnv.id = cf.id
     """.update.run.as()
 
-  val foodInMealView: ConnectionIO[Unit] =
+  val nutrientsOfQuarterView: ConnectionIO[Unit] =
     sql"""
-      create view food_in_meal_view as
-      select false                                    as custom,
-             f.id                                     as food_id,
-             m.id                                     as meal_id,
-             m.name                                   as meal_name,
-             m.user_id,
-             m.day,
-             f.description,
-             mf.amount,
-             (fwnv.energy  * (mf.amount / 100))::real as energy,
-             (fwnv.protein * (mf.amount / 100))::real as protein,
-             (fwnv.carbs   * (mf.amount / 100))::real as carbs,
-             (fwnv.fat     * (mf.amount / 100))::real as fat,
-             (fwnv.fiber   * (mf.amount / 100))::real as fiber
-      from meal m
-               join meal_food_aggregated_view mf on m.id = mf.meal_id
-               join food f on f.id = mf.food_id
-               join foods_with_nutrients_view fwnv on fwnv.id = f.id
-      union
-      select true                                       as custom,
-             cf.id                                      as food_id,
-             m.id                                       as meal_id,
-             m.name                                     as meal_name,
-             m.user_id,
-             m.day,
-             cf.description,
-             mcf.amount,
-             (cfwnv.energy  * (mcf.amount / 100))::real as energy,
-             (cfwnv.protein * (mcf.amount / 100))::real as protein,
-             (cfwnv.carbs   * (mcf.amount / 100))::real as carbs,
-             (cfwnv.fat     * (mcf.amount / 100))::real as fat,
-             (cfwnv.fiber   * (mcf.amount / 100))::real as fiber
-      from meal m
-               join meal_custom_food_aggregated_view mcf on m.id = mcf.meal_id
-               join custom_food cf on cf.id = mcf.custom_food_id
-               join custom_food_with_nutrients_view cfwnv on cfwnv.id = cf.id
-    """.update.run.as()
-
-  val nutrientsOfMealView: ConnectionIO[Unit] =
-    sql"""
-      create view nutrients_of_meal_view as
-      select meal_id,
-             meal_name,
-             "day",
+      create view nutrients_of_quarter_view as
+      select "day",
+             "quarter",
              user_id,
              sum(energy)  as energy,
              sum(protein) as protein,
              sum(carbs)   as carbs,
              sum(fat)     as fat,
              sum(fiber)   as fiber
-      from food_in_meal_view
-      group by meal_id,user_id, meal_name, "day"
+      from log_with_nutrients_view
+      group by "day", "quarter", "user_id"
     """.update.run.as()
 
   val nutrientsOfDayView: ConnectionIO[Unit] =
@@ -121,8 +109,8 @@ object Views {
              sum(carbs)   as carbs,
              sum(fat)     as fat,
              sum(fiber)   as fiber
-      from food_in_meal_view
-      group by user_id, "day"
+      from log_with_nutrients_view
+      group by "day", "user_id"
     """.update.run.as()
 
   val userWithTargetsView: ConnectionIO[Unit] =
@@ -144,10 +132,9 @@ object Views {
   val all: ConnectionIO[Unit] = for {
     _ <- foodWithNutrientsView
     _ <- customFoodWithNutrientsView
-    _ <- mealFoodAggregatedView
-    _ <- customMealFoodAggregatedView
-    _ <- foodInMealView
-    _ <- nutrientsOfMealView
+    _ <- logAggregatedView
+    _ <- logWithNutrients
+    _ <- nutrientsOfQuarterView
     _ <- nutrientsOfDayView
     _ <- userWithTargetsView
   } yield ()

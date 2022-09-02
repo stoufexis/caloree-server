@@ -5,9 +5,8 @@ import doobie.util.transactor.Transactor
 
 import cats.effect.MonadCancelThrow
 
-import caloree.model.Types.{AccessToken, Description, EntityId, Grams, Page, Password, Username}
-import caloree.model.{CustomFood, CustomFoodPreview, Food, FoodPreview, Meal, MealFood, User}
-import caloree.query.MealFoodQuery.{CustomFoodAndMealParams, FoodAndMealParams}
+import caloree.model.Types.{AccessToken, Description, EntityId, Grams, Password, Username}
+import caloree.model.{CustomFood, CustomFoodPreview, Food, FoodPreview, Log, User}
 
 import java.time.LocalDate
 
@@ -37,23 +36,13 @@ object AllRepos {
     Run.option((FoodQuery.foodById _).tupled)
 
   implicit def mealFoodByUserAndDateRepo[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Many[F, (EntityId[User], LocalDate), MealFood] =
-    Run.many { case ((u, d), page, limit) => MealFoodQuery.mealFoodByUserAndDate(u, d, page, limit) }
+      implicit lh: LogHandler): Run.Many[F, (EntityId[User], LocalDate), Log] =
+    Run.many { case ((u, d), page, limit) => MealFoodQuery.logByUserAndDate(u, d, page, limit) }
 
-  implicit def mealFoodRepos[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Unique[F, (EntityId[Food], EntityId[Meal], Grams), Int] =
-    Run.unique((MealFoodQuery.insertMealFood _).tupled)
+  type InsertMealFoodParams = (Either[EntityId[CustomFood], EntityId[Food]], Grams, LocalDate, Int, EntityId[User])
 
-  implicit def mealCustomFoodRepos[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Unique[F, (EntityId[CustomFood], EntityId[Meal], Grams, EntityId[User]), Int] =
-    Run.unique((MealFoodQuery.insertMealCustomFood _).tupled)
-
-  implicit def insertFoodAndMealRepo[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Unique[F, FoodAndMealParams, Int] =
-    Run.unique((MealFoodQuery.insertFoodAndMeal _).tupled)
-
-  implicit def insertCustomFoodAndMealRepo[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Unique[F, CustomFoodAndMealParams, Int] =
-    Run.unique((MealFoodQuery.insertCustomFoodAndMeal _).tupled)
+  implicit def insertMealFoodRepos[F[_]: MonadCancelThrow: Transactor](
+      implicit lh: LogHandler): Run.Unique[F, InsertMealFoodParams, Int] =
+    Run.unique((MealFoodQuery.insertLog _).tupled)
 
 }

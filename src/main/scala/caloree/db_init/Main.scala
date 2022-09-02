@@ -1,16 +1,24 @@
 package caloree.db_init
 
 import doobie.implicits._
-
 import cats.effect.{IO, IOApp}
 import cats.syntax.all._
-
 import caloree.configuration.{Config, DBConfig}
-
+import doobie.ConnectionIO
 import pureconfig.ConfigSource
 import pureconfig.generic.auto._
 
 object Main extends IOApp.Simple {
+
+  val init: IO[ConnectionIO[Unit]] = for {
+    insertStaticFoods <- StaticFoods.insertsStaticFoods[IO]
+    cio <-
+      (for {
+        _ <- Tables.all
+        _ <- Views.all
+        _ <- insertStaticFoods
+      } yield ()).pure[IO]
+  } yield cio
 
   def run: IO[Unit] = for {
     config <- ConfigSource
@@ -22,8 +30,7 @@ object Main extends IOApp.Simple {
       .liftTo[IO]
 
     ta = DBConfig.transactor[IO](config)
-    init <- Init[IO]
-    _    <- init.transact[IO](ta)
+    _ <- init.flatMap(_.transact[IO](ta))
   } yield ()
 
 }
