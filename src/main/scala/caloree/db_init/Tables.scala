@@ -12,10 +12,10 @@ object Tables {
       sql"""
         create table food
         (
-            id                   bigint    primary key,
-            f_type               food_type not null,
-            description          text      not null,
-            description_tsvector tsvector generated always as (to_tsvector('english'::regconfig, description)) stored
+            id                   bigint   primary key,
+            f_type               varchar  not null,
+            description          text     not null,
+            description_tsvector tsvector generated always as (to_tsvector('english', description)) stored
         )
       """.update.run
     _ <-
@@ -46,9 +46,9 @@ object Tables {
     sql"""
       create table nutrient
       (
-          id        bigint           primary key,
-          name      text             not null,
-          unit_name measurement_unit not null
+          id        bigint  primary key,
+          name      text    not null,
+          unit_name varchar not null
       )
     """.update.run.as()
 
@@ -103,6 +103,17 @@ object Tables {
       )
     """.update.run.as()
 
+  val meal: ConnectionIO[Unit] =
+    sql"""
+      create table meal
+      (
+          id      bigserial primary key,
+          "name"  text   not null,
+          user_id bigint not null references "user",
+          "day"   date   not null
+      )
+    """.update.run.as()
+
   val mealFood: ConnectionIO[Unit] =
     sql"""
       create table meal_food
@@ -137,13 +148,14 @@ object Tables {
     """.update.run.as()
 
   val all: ConnectionIO[Unit] = for {
+    _ <- user
+    _ <- token
     _ <- food
     _ <- customFood
     _ <- nutrient
-    _ <- user
-    _ <- token
     _ <- foodNutrient
     _ <- customFoodNutrient
+    _ <- meal
     _ <- mealFood
     _ <- mealCustomFood
     _ <- userTargetNutrients

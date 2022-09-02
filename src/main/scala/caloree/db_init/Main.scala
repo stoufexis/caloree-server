@@ -2,7 +2,6 @@ package caloree.db_init
 
 import doobie.implicits._
 
-import cats.effect.implicits._
 import cats.effect.{IO, IOApp}
 import cats.syntax.all._
 
