@@ -13,11 +13,11 @@ object Views {
       select f.id,
              f.f_type,
              f.description,
-             coalesce(sum(case when n.id = 1008 then fn.amount end), 0::real)  as energy,
+             coalesce(sum(case when n.id = 1008 then fn.amount end), 0::real) as energy,
              coalesce(sum(case when n.id = 1003 then fn.amount end), 0::real) as protein,
-             coalesce(sum(case when n.id = 1005 then fn.amount end), 0::real)   as carbs,
-             coalesce(sum(case when n.id = 1004 then fn.amount end), 0::real)     as fat,
-             coalesce(sum(case when n.id = 1079 then fn.amount end), 0::real)   as fiber
+             coalesce(sum(case when n.id = 1005 then fn.amount end), 0::real) as carbs,
+             coalesce(sum(case when n.id = 1004 then fn.amount end), 0::real) as fat,
+             coalesce(sum(case when n.id = 1079 then fn.amount end), 0::real) as fiber
       from food f 
           join food_nutrient fn on f.id = fn.food_id
           join nutrient n on n.id = fn.nutrient_id

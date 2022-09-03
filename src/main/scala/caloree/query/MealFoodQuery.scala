@@ -17,10 +17,11 @@ object MealFoodQuery {
       implicit l: LogHandler): ConnectionIO[List[Log]] =
     sql"""
         select food_id, custom_food_id, "day", "quarter", description, amount, energy, protein, carbs, fat, fiber
-        from log_with_nutrients_view
-        where user_id = $user
-        and   "day"   = $date
-        limit $limit
+        from   log_with_nutrients_view
+        where  user_id = $user
+        and    "day"   = $date
+        and    amount > 0
+        limit  $limit
         offset $page * $limit
     """
       .query[Log]
@@ -30,6 +31,7 @@ object MealFoodQuery {
       implicit l: LogHandler): ConnectionIO[Int] = {
     val foodId       = fid.toOption
     val customFoodId = fid.swap.toOption
+
     sql"""
       insert into "log" (food_id, custom_food_id, amount, "day", "quarter", user_id) 
       values ($foodId, $customFoodId, $amount, $day, $quarter, $user)
@@ -38,29 +40,31 @@ object MealFoodQuery {
 
   def logDeletion(fid: FID, day: LocalDate, quarter: Int, user: UID)(implicit l: LogHandler): ConnectionIO[Int] =
     fid match {
-      case Left(fid)  =>
+      case Left(fid) =>
         sql"""
-        insert into "log"(food_id, custom_food_id, amount, "day", "quarter", user_id)
-        select food_id, custom_food_id, -amount, "day", "quarter", "user_id" from log_aggregated_view
-        where user_id = $user and "day" = $day and "quarter" = $quarter and custom_food_id = $fid
-      """.update.run
+          insert into "log"(food_id, custom_food_id, amount, "day", "quarter", user_id)
+          select food_id, custom_food_id, -amount, "day", "quarter", "user_id" from log_aggregated_view
+          where user_id = $user and "day" = $day and "quarter" = $quarter and custom_food_id = $fid
+        """.update.run
+
       case Right(fid) =>
         sql"""
-        insert into "log"(food_id, custom_food_id, amount, "day", "quarter", user_id)
-        select food_id, custom_food_id, -amount, "day", "quarter", "user_id" from log_aggregated_view
-        where user_id = $user and "day" = $day and "quarter" = $quarter and food_id = $fid
-      """.update.run
+          insert into "log"(food_id, custom_food_id, amount, "day", "quarter", user_id)
+          select food_id, custom_food_id, -amount, "day", "quarter", "user_id" from log_aggregated_view
+          where user_id = $user and "day" = $day and "quarter" = $quarter and food_id = $fid
+        """.update.run
     }
 
   def logModification(fid: FID, newAmount: Grams, day: LocalDate, quarter: Int, user: UID)(
       implicit l: LogHandler): ConnectionIO[Int] =
     fid match {
-      case Left(fid)  =>
+      case Left(fid) =>
         sql"""
           insert into "log"(food_id, custom_food_id, amount, "day", "quarter", user_id)
           select food_id, custom_food_id, ($newAmount - amount), "day", "quarter", "user_id" from log_aggregated_view
           where user_id = $user and "day" = $day and "quarter" = $quarter and custom_food_id = $fid
         """.update.run
+
       case Right(fid) =>
         sql"""
           insert into "log"(food_id, custom_food_id, amount, "day", "quarter", user_id)

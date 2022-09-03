@@ -40,8 +40,6 @@ object AllRepos {
       implicit lh: LogHandler): Run.Many[F, (EntityId[User], LocalDate), Log] =
     Run.many { case ((u, d), page, limit) => MealFoodQuery.logByUserAndDate(u, d, page, limit) }
 
-  type InsertMealFoodParams = (Either[EntityId[CustomFood], EntityId[Food]], Grams, LocalDate, Int, EntityId[User])
-
   implicit def insertMealFoodRepos[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Unique[F, (ModifyLog, EntityId[User]), Int] =
     Run.unique {

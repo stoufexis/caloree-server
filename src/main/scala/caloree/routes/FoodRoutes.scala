@@ -4,6 +4,7 @@ import org.http4s.AuthedRoutes
 import org.http4s.dsl.Http4sDsl
 
 import cats.Monad
+import cats.syntax.all._
 
 import caloree.model.Types.{Description, EntityId, Grams, Page}
 import caloree.model.{Food, FoodPreview, User}
@@ -22,11 +23,8 @@ object FoodRoutes {
     import dsl._
 
     AuthedRoutes.of {
-      case GET -> _ :? FoodIdP(id) +& GramsP(amount) as _ =>
-        go.run((id, amount)).asResponse
-
-      case GET -> _ :? DescriptionP(desc) +& PageP(page) +& Limit(limit) as _ =>
-        gm.run(desc, page, limit).asResponse
+      case GET -> _ :? FoodIdP(id) +& GramsP(g) as _                => go.run((id, g)).asResponse
+      case GET -> _ :? DescriptionP(d) +& PageP(p) +& Limit(l) as _ => gm.run(d, p, l).asResponse
     }
   }
 }

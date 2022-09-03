@@ -47,7 +47,7 @@ object Tables {
       create table nutrient
       (
           id        bigint  primary key,
-          name      text    not null,
+          "name"    text    not null,
           unit_name varchar not null
       )
     """.update.run.as()

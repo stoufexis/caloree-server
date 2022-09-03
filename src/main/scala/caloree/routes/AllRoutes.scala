@@ -26,7 +26,7 @@ object AllRoutes {
       r18: Run.Unique[F, (ModifyLog, UID), Int]
   ): HttpRoutes[F] = Router(
     "auth"        -> AuthRoutes.routes,
-    "meal-food"   -> auth(LogRoutes.routes),
+    "log"         -> auth(LogRoutes.routes),
     "custom-food" -> auth(CustomFoodRoutes.routes),
     "food"        -> auth(FoodRoutes.routes)
   )

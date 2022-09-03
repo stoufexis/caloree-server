@@ -28,23 +28,21 @@ object Main extends IOApp.Simple {
 
   val log: HttpApp[IO] => HttpApp[IO] = Logger.httpApp[IO](logHeaders = false, logBody = true)(_)
 
-  val app: IO[Nothing] =
-    ConfigSource.default.load[Config]
-      .map { case Config(db, api) =>
-        implicit val xa: Transactor[IO] = DBConfig.transactor(db)
-        import AllRepos._
-        implicit val auth: AuthMiddleware[IO, User] = AuthUser[IO]
+  val app: IO[Nothing] = ConfigSource.default.load[Config]
+    .map { case Config(db, api, _) =>
+      implicit val xa: Transactor[IO]             = DBConfig.transactor(db)
+      import AllRepos._
+      implicit val auth: AuthMiddleware[IO, User] = AuthUser[IO]
 
-        val app: HttpApp[IO] = log(AllRoutes.routes[IO].orNotFound)
+      val app: HttpApp[IO] = log(AllRoutes.routes[IO].orNotFound)
 
-        ApiConfig.server[IO](api)(app)
-          .use(_ => IO.never)
-      }
-      .left
-      .map(x => new Exception(x.prettyPrint()))
-      .liftTo[IO]
-      .flatten
+      ApiConfig.server[IO](api)(app)
+        .use(_ => IO.never)
+    }
+    .left
+    .map(x => new Exception(x.prettyPrint()))
+    .liftTo[IO]
+    .flatten
 
   def run: IO[Unit] = app
-
 }
