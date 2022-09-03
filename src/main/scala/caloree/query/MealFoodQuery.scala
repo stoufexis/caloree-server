@@ -27,7 +27,7 @@ object MealFoodQuery {
       .query[Log]
       .to[List]
 
-  def insertLog(fid: FID, amount: Grams, day: LocalDate, minute: Int, user: UID)(
+  def insertLog(fid: FID, amount: Grams, day: LocalDate, minute: Minute, user: UID)(
       implicit l: LogHandler): ConnectionIO[Int] = {
     val foodId       = fid.toOption
     val customFoodId = fid.swap.toOption
@@ -38,7 +38,7 @@ object MealFoodQuery {
     """.update.run
   }
 
-  def logDeletion(fid: FID, day: LocalDate, minute: Int, user: UID)(implicit l: LogHandler): ConnectionIO[Int] =
+  def logDeletion(fid: FID, day: LocalDate, minute: Minute, user: UID)(implicit l: LogHandler): ConnectionIO[Int] =
     fid match {
       case Left(fid) =>
         sql"""
@@ -55,7 +55,7 @@ object MealFoodQuery {
         """.update.run
     }
 
-  def logModification(fid: FID, newAmount: Grams, day: LocalDate, minute: Int, user: UID)(
+  def logModification(fid: FID, newAmount: Grams, day: LocalDate, minute: Minute, user: UID)(
       implicit l: LogHandler): ConnectionIO[Int] =
     fid match {
       case Left(fid) =>

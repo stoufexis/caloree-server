@@ -7,7 +7,7 @@ import doobie.implicits.javatimedrivernative._
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder => CirceDecoder, Encoder => CirceEncoder}
 
-import caloree.model.Types.{Description, EntityId, FID}
+import caloree.model.Types.{Description, EntityId, FID, Minute}
 
 import java.time.LocalDate
 
@@ -15,7 +15,7 @@ import java.time.LocalDate
 case class Log(
     id: FID,
     day: LocalDate,
-    minute: Int,
+    minute: Minute,
     foodDescription: Description,
     nutrients: Nutrients)
 
@@ -25,7 +25,7 @@ object Log {
       foodId: Option[EntityId[Food]],
       customFoodId: Option[EntityId[CustomFood]],
       day: LocalDate,
-      minute: Int,
+      minute: Minute,
       foodDescription: Description,
       nutrients: Nutrients)
 

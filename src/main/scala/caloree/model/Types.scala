@@ -18,12 +18,20 @@ object Types {
   @newtype case class Username(string: String)
   @newtype case class AccessToken(string: String)
   @newtype case class Password(string: String)
+  @newtype case class Minute(string: String)
 
   type UID = EntityId[User]
   type FID = Either[EntityId[CustomFood], EntityId[Food]]
 
   implicit val eitherIdsDecoder: CirceDecoder[FID] = CirceDecoder.decodeEither("custom_food_id", "food_id")
   implicit val eitherIdsEncoder: CirceEncoder[FID] = CirceEncoder.encodeEither("custom_food_id", "food_id")
+
+  object Minute {
+    implicit val putMinute: Put[Minute]                   = deriving
+    implicit val getMinute: Get[Minute]                   = deriving
+    implicit val minuteCirceEncoder: CirceEncoder[Minute] = deriving
+    implicit val minuteCirceDecoder: CirceDecoder[Minute] = deriving
+  }
 
   object EntityId {
     implicit def putPage[A]: Put[EntityId[A]]                           = deriving

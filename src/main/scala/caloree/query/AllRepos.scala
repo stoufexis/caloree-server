@@ -43,14 +43,14 @@ object AllRepos {
   implicit def insertMealFoodRepos[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Unique[F, (ModifyLog, EntityId[User]), Int] =
     Run.unique {
-      case (ModifyLog.Add(fid, amount, day, quarter), user) =>
-        MealFoodQuery.insertLog(fid, amount, day, quarter, user)
+      case (ModifyLog.Add(fid, amount, day, minute), user) =>
+        MealFoodQuery.insertLog(fid, amount, day, minute, user)
 
-      case (ModifyLog.Remove(fid, day, quarter), user) =>
-        MealFoodQuery.logDeletion(fid, day, quarter, user)
+      case (ModifyLog.Remove(fid, day, minute), user) =>
+        MealFoodQuery.logDeletion(fid, day, minute, user)
 
-      case (ModifyLog.Modify(fid, newAmount, day, quarter), user) =>
-        MealFoodQuery.logModification(fid, newAmount, day, quarter, user)
+      case (ModifyLog.Modify(fid, newAmount, day, minute), user) =>
+        MealFoodQuery.logModification(fid, newAmount, day, minute, user)
     }
 
 }
