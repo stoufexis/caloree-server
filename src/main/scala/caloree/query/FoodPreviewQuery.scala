@@ -7,10 +7,7 @@ import caloree.model.Types._
 import caloree.model.{Food, FoodPreview}
 
 object FoodPreviewQuery {
-  def foodsPreviewByDescription(
-      description: Description,
-      page: Page,
-      limit: Int)(
+  def foodsPreviewByDescription(description: Description, page: Page, limit: Int)(
       implicit lh: LogHandler): ConnectionIO[List[FoodPreview]] =
     sql"""
       select id, description

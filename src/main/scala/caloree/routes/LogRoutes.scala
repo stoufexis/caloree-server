@@ -7,7 +7,7 @@ import cats.MonadThrow
 import cats.syntax.all._
 
 import caloree.dto.ModifyLog
-import caloree.model.Types.EntityId
+import caloree.model.Types.{EntityId, UID}
 import caloree.model._
 import caloree.query.Run
 import caloree.routes.Params.{DateP, Limit, PageP}
@@ -15,12 +15,12 @@ import caloree.util._
 
 import java.time.LocalDate
 
-object MealFoodRoutes {
+object LogRoutes {
 
   def routes[F[_]: MonadThrow: EntityDecoder[*[_], ModifyLog]](
       implicit
-      get: Run.Many[F, (EntityId[User], LocalDate), Log],
-      add: Run.Unique[F, (ModifyLog, EntityId[User]), Int]
+      get: Run.Many[F, (UID, LocalDate), Log],
+      add: Run.Unique[F, (ModifyLog, UID), Int]
   ): AuthedRoutes[User, F] = {
     val dsl = Http4sDsl[F]
     import dsl._

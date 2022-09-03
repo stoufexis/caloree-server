@@ -1,9 +1,11 @@
 package caloree.model
 
+import doobie.{Get, Put}
+
 import org.http4s.QueryParamDecoder
+
 import io.circe.{Decoder => CirceDecoder, Encoder => CirceEncoder}
 import io.estatico.newtype.macros.newtype
-import doobie.{Get, Put}
 
 import java.time.LocalDate
 
@@ -17,7 +19,11 @@ object Types {
   @newtype case class AccessToken(string: String)
   @newtype case class Password(string: String)
 
-  type TX
+  type UID = EntityId[User]
+  type FID = Either[EntityId[CustomFood], EntityId[Food]]
+
+  implicit val eitherIdsDecoder: CirceDecoder[FID] = CirceDecoder.decodeEither("custom_food_id", "food_id")
+  implicit val eitherIdsEncoder: CirceEncoder[FID] = CirceEncoder.encodeEither("custom_food_id", "food_id")
 
   object EntityId {
     implicit def putPage[A]: Put[EntityId[A]]                           = deriving
