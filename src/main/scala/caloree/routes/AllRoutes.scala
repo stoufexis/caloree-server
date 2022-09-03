@@ -5,15 +5,14 @@ import org.http4s.server.{AuthMiddleware, Router}
 
 import cats.effect.kernel.Concurrent
 
+import caloree.dto.ModifyLog
 import caloree.model.Types._
 import caloree.model._
-import caloree.query.AllRepos.InsertMealFoodParams
 import caloree.query.Run
 
 import java.time.LocalDate
 
 object AllRoutes {
-
   def routes[F[_]: Concurrent](
       implicit
       auth: AuthMiddleware[F, User],
@@ -24,7 +23,7 @@ object AllRoutes {
       r9: Run.Many[F, (Description, EntityId[User]), CustomFoodPreview],
       r10: Run.Many[F, Description, FoodPreview],
       r11: Run.Many[F, (EntityId[User], LocalDate), Log],
-      r18: Run.Unique[F, InsertMealFoodParams, Int]
+      r18: Run.Unique[F, (ModifyLog, EntityId[User]), Int]
   ): HttpRoutes[F] = Router(
     "auth"        -> AuthRoutes.routes,
     "meal-food"   -> auth(MealFoodRoutes.routes),

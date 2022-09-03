@@ -4,7 +4,9 @@ import doobie._
 import doobie.implicits._
 import doobie.implicits.javasql._
 import doobie.implicits.javatimedrivernative._
+
 import cats.syntax.all._
+
 import caloree.model.Types._
 import caloree.model.{CustomFood, Food, Log, User}
 
@@ -25,7 +27,7 @@ object MealFoodQuery {
         and   "day"   = $date
         limit $limit
         offset $page * $limit
-      """
+    """
       .query[Log]
       .to[List]
 
@@ -42,5 +44,46 @@ object MealFoodQuery {
       insert into "log" (food_id, custom_food_id, amount, "day", "quarter", user_id) 
       values ($foodId, $customFoodId, $amount, $day, $quarter, $user)
     """.update.run
+  }
+
+  def logDeletion(
+      fid: Either[EntityId[CustomFood], EntityId[Food]],
+      day: LocalDate,
+      quarter: Int,
+      user: EntityId[User]
+  ): ConnectionIO[Int] = fid match {
+    case Left(fid)  =>
+      sql"""
+        insert into "log"(food_id, custom_food_id, amount, "day", "quarter", user_id)
+        select food_id, custom_food_id, -amount, "day", "quarter", "user_id" from log_aggregated_view
+        where user_id = $user and "day" = $day and "quarter" = $quarter and custom_food_id = $fid
+      """.update.run
+    case Right(fid) =>
+      sql"""
+        insert into "log"(food_id, custom_food_id, amount, "day", "quarter", user_id)
+        select food_id, custom_food_id, -amount, "day", "quarter", "user_id" from log_aggregated_view
+        where user_id = $user and "day" = $day and "quarter" = $quarter and food_id = $fid
+      """.update.run
+  }
+
+  def logModification(
+      fid: Either[EntityId[CustomFood], EntityId[Food]],
+      newAmount: Grams,
+      day: LocalDate,
+      quarter: Int,
+      user: EntityId[User]
+  ): ConnectionIO[Int] = fid match {
+    case Left(fid)  =>
+      sql"""
+        insert into "log"(food_id, custom_food_id, amount, "day", "quarter", user_id)
+        select food_id, custom_food_id, ($newAmount - amount), "day", "quarter", "user_id" from log_aggregated_view
+        where user_id = $user and "day" = $day and "quarter" = $quarter and custom_food_id = $fid
+      """.update.run
+    case Right(fid) =>
+      sql"""
+        insert into "log"(food_id, custom_food_id, amount, "day", "quarter", user_id)
+        select food_id, custom_food_id, ($newAmount - amount), "day", "quarter", "user_id" from log_aggregated_view
+        where user_id = $user and "day" = $day and "quarter" = $quarter and food_id = $fid
+      """.update.run
   }
 }

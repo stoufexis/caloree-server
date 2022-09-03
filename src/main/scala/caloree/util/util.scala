@@ -1,12 +1,12 @@
 package caloree
 
-import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
-import org.http4s.dsl.Http4sDsl
-import org.http4s.{DecodeFailure, Headers, Response}
+import cats.syntax.all._
+import cats.{Monad, MonadThrow}
 import io.circe.syntax.EncoderOps
 import io.circe.{Encoder => CirceEncoder}
-import cats.syntax.all._
-import cats.{Monad, MonadError}
+import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
+import org.http4s.dsl.Http4sDsl
+import org.http4s.{AuthedRequest, EntityDecoder, Headers, Response}
 import org.typelevel.ci.CIString
 
 package object util {
@@ -42,5 +42,9 @@ package object util {
   implicit class CondSyntax(p: Boolean) {
     def cond[A, B](right: => A, left: => B): Either[B, A] =
       Either.cond(p, right, left)
+  }
+
+  implicit class DecodeAuthedRequestSyntax[U, F[_]: MonadThrow](req: AuthedRequest[F, U]) {
+    def as[A](implicit enc: EntityDecoder[F, A]): F[A] = req.req.as[A]
   }
 }

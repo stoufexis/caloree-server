@@ -5,6 +5,7 @@ import doobie.util.transactor.Transactor
 
 import cats.effect.MonadCancelThrow
 
+import caloree.dto.ModifyLog
 import caloree.model.Types.{AccessToken, Description, EntityId, Grams, Password, Username}
 import caloree.model.{CustomFood, CustomFoodPreview, Food, FoodPreview, Log, User}
 
@@ -42,7 +43,16 @@ object AllRepos {
   type InsertMealFoodParams = (Either[EntityId[CustomFood], EntityId[Food]], Grams, LocalDate, Int, EntityId[User])
 
   implicit def insertMealFoodRepos[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Unique[F, InsertMealFoodParams, Int] =
-    Run.unique((MealFoodQuery.insertLog _).tupled)
+      implicit lh: LogHandler): Run.Unique[F, (ModifyLog, EntityId[User]), Int] =
+    Run.unique {
+      case (ModifyLog.Add(fid, amount, day, quarter), user) =>
+        MealFoodQuery.insertLog(fid, amount, day, quarter, user)
+
+      case (ModifyLog.Remove(fid, day, quarter), user) =>
+        MealFoodQuery.logDeletion(fid, day, quarter, user)
+
+      case (ModifyLog.Modify(fid, newAmount, day, quarter), user) =>
+        MealFoodQuery.logModification(fid, newAmount, day, quarter, user)
+    }
 
 }
