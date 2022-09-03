@@ -1,13 +1,14 @@
 package caloree.routes
 
 import org.http4s.dsl.Http4sDsl
-import org.http4s.{AuthedRoutes, EntityDecoder, InvalidMessageBodyFailure}
+import org.http4s.{AuthedRoutes, EntityDecoder}
 
 import cats.MonadThrow
+import cats.data.EitherT
 import cats.syntax.all._
 
 import caloree.dto.ModifyLog
-import caloree.model.Types.{EntityId, UID}
+import caloree.model.Types.UID
 import caloree.model._
 import caloree.query.Run
 import caloree.routes.Params.{DateP, Limit, PageP}
@@ -28,9 +29,7 @@ object LogRoutes {
     AuthedRoutes.of {
       case GET -> _ :? DateP(d) +& PageP(p) +& Limit(l) as u => get.run((u.id, d), p, l).asResponse
       case req @ POST -> _ as u                              =>
-        req.as[ModifyLog]
-          .flatMap(ml => add.run((ml, u.id)) *> Ok())
-          .handleErrorWith { case e: InvalidMessageBodyFailure => BadRequest(e.details) }
+        req.decode.foldF(_.asResponse, v => add.run((v, u.id)) *> Ok())
     }
   }
 }

@@ -10,5 +10,4 @@ case class Nutrients(amount: Grams, energy: Kcal, protein: Grams, carbs: Grams, 
 object Nutrients {
   implicit val foodCirceDecoder: CirceDecoder[Nutrients] = deriveDecoder
   implicit val foodCirceEncoder: CirceEncoder[Nutrients] = deriveEncoder
-
 }
