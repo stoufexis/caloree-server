@@ -1,3 +1,3 @@
 package caloree.configuration
 
-case class Config (database: DBConfig, api: ApiConfig)
+case class Config (database: DBConfig, api: ApiConfig, defaultUser: DefaultUser)
