@@ -29,16 +29,15 @@ group by cf.id;
 
 
 create view log_aggregated_view as
-select food_id, custom_food_id, "day", "quarter", user_id, sum(amount) as amount
+select food_id, custom_food_id, "day", "minute", user_id, sum(amount) as amount
 from "log"
-group by food_id, custom_food_id, "day", "quarter", user_id;
-
+group by food_id, custom_food_id, "day", "minute", user_id;
 
 create view log_with_nutrients_view as
 select food_id,
        null                                      as custom_food_id,
        "day",
-       "quarter",
+       "minute",
        f.description,
        lav.user_id,
        amount,
@@ -54,7 +53,7 @@ union
 select null                                       as food_id,
        custom_food_id,
        "day",
-       "quarter",
+       "minute",
        cf.description,
        lav.user_id,
        amount,
@@ -68,9 +67,9 @@ from log_aggregated_view lav
          inner join custom_food_with_nutrients_view cfwnv on cfwnv.id = cf.id;
 
 
-create view nutrients_of_quarter_view as
+create view nutrients_of_minute_view as
 select "day",
-       "quarter",
+       "minute",
        user_id,
        sum(energy)  as energy,
        sum(protein) as protein,
@@ -78,7 +77,7 @@ select "day",
        sum(fat)     as fat,
        sum(fiber)   as fiber
 from log_with_nutrients_view
-group by "day", "quarter", "user_id";
+group by "day", "minute", "user_id";
 
 create view nutrients_of_day_view as
 select "day",

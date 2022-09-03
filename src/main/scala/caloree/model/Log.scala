@@ -15,7 +15,7 @@ import java.time.LocalDate
 case class Log(
     id: FID,
     day: LocalDate,
-    quarter: Int,
+    minute: Int,
     foodDescription: Description,
     nutrients: Nutrients)
 
@@ -25,18 +25,18 @@ object Log {
       foodId: Option[EntityId[Food]],
       customFoodId: Option[EntityId[CustomFood]],
       day: LocalDate,
-      quarter: Int,
+      minute: Int,
       foodDescription: Description,
       nutrients: Nutrients)
 
   implicit val readMealFood: Read[Log] =
-    Read[LogIn].map { case LogIn(foodId, customFoodId, day, quarter, foodDescription, nutrients) =>
+    Read[LogIn].map { case LogIn(foodId, customFoodId, day, minute, foodDescription, nutrients) =>
       // not exhaustive since database ensures one of the cases is matched
       val id = (foodId, customFoodId) match {
         case (Some(id), None) => Right(id)
         case (None, Some(id)) => Left(id)
       }
-      Log(id, day, quarter, foodDescription, nutrients)
+      Log(id, day, minute, foodDescription, nutrients)
     }
 
   implicit val foodCirceDecoder: CirceDecoder[Log] = deriveDecoder

@@ -68,9 +68,9 @@ create table "log"
     custom_food_id bigint references custom_food,
     amount         integer  not null,
     "day"          date     not null,
-    "quarter"      smallint not null,
+    "minute"       smallint not null,
     user_id        bigint   not null references "user" (id),
-    check ( "quarter" >= 0 and "quarter" < 96),
+    check ( "minute" >= 0 and "minute" < 1440),
     check ((food_id is not null and custom_food_id is null)
         or (food_id is null and custom_food_id is not null))
 );
