@@ -20,9 +20,20 @@ object Types {
   @newtype case class Password(string: String)
   @newtype case class Minute(string: String)
 
-  type UID  = EntityId[User]
+  type UID = EntityId[User]
+
   type CFID = EntityId[CustomFood]
-  type FID  = EntityId[Food]
+  object CFID {
+    def unapply(string: String): Option[CFID] =
+      string.toLongOption.map(EntityId(_))
+  }
+
+  type FID = EntityId[Food]
+  object FID {
+    def unapply(string: String): Option[FID] =
+      string.toLongOption.map(EntityId(_))
+  }
+
   type EFID = Either[EntityId[CustomFood], EntityId[Food]]
 
   implicit val eitherIdsDecoder: CirceDecoder[EFID] = CirceDecoder.decodeEither("custom_food_id", "food_id")
