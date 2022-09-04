@@ -12,7 +12,7 @@ import caloree.model.{CustomFood, Food, Log, User}
 
 import java.time.LocalDate
 
-object MealFoodQuery {
+object LogQuery {
   def logByUserAndDate(user: UID, date: LocalDate, offset: Int, page: Page, limit: Int)(
       implicit l: LogHandler): ConnectionIO[List[Log]] =
     sql"""
@@ -23,9 +23,7 @@ object MealFoodQuery {
         and    amount > 0
         limit  $limit
         offset $page * $limit
-    """
-      .query[Log]
-      .to[List]
+    """.query[Log].to
 
   def undoLog(user: UID, day: LocalDate, times: Int): ConnectionIO[Int] =
     sql"""
@@ -33,8 +31,7 @@ object MealFoodQuery {
         where id in (
           select id
           from "log"
-          where user_id = $user
-            and "day" = $day
+          where user_id = $user and "day" = $day
           order by generated_at desc
           limit $times
         )

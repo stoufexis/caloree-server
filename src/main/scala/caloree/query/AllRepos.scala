@@ -36,22 +36,22 @@ object AllRepos {
 
   implicit def mealFoodByUserAndDateRepo[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Many[F, (UID, Int, LocalDate), Log] =
-    Run.many { case ((u, offset, d), page, limit) => MealFoodQuery.logByUserAndDate(u, d, offset, page, limit) }
+    Run.many { case ((u, offset, d), page, limit) => LogQuery.logByUserAndDate(u, d, offset, page, limit) }
 
   implicit def insertMealFoodRepos[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Unique[F, (ModifyLog, UID), Int] =
     Run.unique {
       case (ModifyLog.Add(fid, amount, day, minute), user) =>
-        MealFoodQuery.insertLog(fid, amount, day, minute, user)
+        LogQuery.insertLog(fid, amount, day, minute, user)
 
       case (ModifyLog.Remove(fid, day, minute), user) =>
-        MealFoodQuery.logDeletion(fid, day, minute, user)
+        LogQuery.logDeletion(fid, day, minute, user)
 
       case (ModifyLog.Modify(fid, newAmount, day, minute), user) =>
-        MealFoodQuery.logModification(fid, newAmount, day, minute, user)
+        LogQuery.logModification(fid, newAmount, day, minute, user)
 
       case (ModifyLog.Undo(day, times), user) =>
-        MealFoodQuery.undoLog(user, day, times)
+        LogQuery.undoLog(user, day, times)
     }
 
 }
