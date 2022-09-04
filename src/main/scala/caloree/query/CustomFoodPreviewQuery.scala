@@ -2,8 +2,7 @@ package caloree.query
 
 import doobie._
 import doobie.implicits._
-
-import caloree.model.Types.{Description, EntityId, Page, UID}
+import caloree.model.Types.{Description, EntityId, Limit, Page, UID}
 import caloree.model.{CustomFood, CustomFoodPreview, User}
 
 object CustomFoodPreviewQuery {
@@ -11,7 +10,7 @@ object CustomFoodPreviewQuery {
       description: Description,
       user: UID,
       page: Page,
-      limit: Int)(
+      limit: Limit)(
       implicit lh: LogHandler
   ): ConnectionIO[List[CustomFoodPreview]] =
     sql"""

@@ -16,9 +16,9 @@ object LogQuery {
   def logByUserAndDate(
       user: UID,
       date: LocalDate,
-      offset: Int,
+      offset: Offset,
       page: Page,
-      limit: Int)(
+      limit: Limit)(
       implicit l: LogHandler
   ): ConnectionIO[List[Log]] =
     sql"""

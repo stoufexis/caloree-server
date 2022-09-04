@@ -7,6 +7,8 @@ import org.http4s.QueryParamDecoder
 import io.circe.{Decoder => CirceDecoder, Encoder => CirceEncoder}
 import io.estatico.newtype.macros.newtype
 
+import cats.Functor
+
 import java.time.LocalDate
 
 object Types {
@@ -19,6 +21,8 @@ object Types {
   @newtype case class AccessToken(string: String)
   @newtype case class Password(string: String)
   @newtype case class Minute(string: String)
+  @newtype case class Limit(toInt: Int)
+  @newtype case class Offset(toInt: Int)
 
   type UID = EntityId[User]
 
@@ -44,6 +48,22 @@ object Types {
     implicit val getMinute: Get[Minute]                   = deriving
     implicit val minuteCirceEncoder: CirceEncoder[Minute] = deriving
     implicit val minuteCirceDecoder: CirceDecoder[Minute] = deriving
+  }
+
+  object Offset {
+    implicit val putOffset: Put[Offset]                       = deriving
+    implicit val getOffset: Get[Offset]                       = deriving
+    implicit val circeEncoderOffset: CirceEncoder[Offset]     = deriving
+    implicit val circeDecoderOffset: CirceDecoder[Offset]     = deriving
+    implicit val queryParamDOffset: QueryParamDecoder[Offset] = deriving
+  }
+
+  object Limit {
+    implicit val putLimit: Put[Limit]                       = deriving
+    implicit val getLimit: Get[Limit]                       = deriving
+    implicit val circeEncoderLimit: CirceEncoder[Limit]     = deriving
+    implicit val circeDecoderLimit: CirceDecoder[Limit]     = deriving
+    implicit val queryParamDLimit: QueryParamDecoder[Limit] = deriving
   }
 
   object EntityId {

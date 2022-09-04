@@ -6,7 +6,7 @@ import doobie.implicits._
 
 import cats.effect.{IO, MonadCancelThrow}
 
-import caloree.model.Types.Page
+import caloree.model.Types.{Limit, Page}
 
 sealed trait Run[F[_], Params, A]
 
@@ -21,7 +21,7 @@ object Run {
   }
 
   trait Many[F[_], Params, A] extends Run[F, Params, A] {
-    def run(p: Params, page: Page, limit: Int): F[List[A]]
+    def run(p: Params, page: Page, limit: Limit): F[List[A]]
   }
 
   def option[F[_]: MonadCancelThrow: Transactor, P, A](
@@ -33,7 +33,7 @@ object Run {
     q(_).transact(implicitly[Transactor[F]])
 
   def many[F[_]: MonadCancelThrow: Transactor, P, A](
-      q: (P, Page, Int) => ConnectionIO[List[A]]): Run.Many[F, P, A] =
+      q: (P, Page, Limit) => ConnectionIO[List[A]]): Run.Many[F, P, A] =
     q(_, _, _).transact(implicitly[Transactor[F]])
 
 }

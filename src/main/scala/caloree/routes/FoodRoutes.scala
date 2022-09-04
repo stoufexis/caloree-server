@@ -26,8 +26,8 @@ object FoodRoutes {
     object GramsOpt extends OptionalQueryParamDecoderMatcher[Grams]("amount")
 
     AuthedRoutes.of {
-      case GET -> _ / FID(id) :? GramsOpt(g) as _                   => go.run((id, g getOrElse Grams(100))).asResponse
-      case GET -> _ :? DescriptionP(d) +& PageP(p) +& Limit(l) as _ => gm.run(d, p, l).asResponse
+      case GET -> _ / FID(id) :? GramsOpt(g) as _                    => go.run((id, g getOrElse Grams(100))).asResponse
+      case GET -> _ :? DescriptionP(d) +& PageP(p) +& LimitP(l) as _ => gm.run(d, p, l).asResponse
     }
   }
 }

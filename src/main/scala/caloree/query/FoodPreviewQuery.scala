@@ -10,7 +10,7 @@ object FoodPreviewQuery {
   def foodsPreviewByDescription(
       description: Description,
       page: Page,
-      limit: Int)(
+      limit: Limit)(
       implicit lh: LogHandler
   ): ConnectionIO[List[FoodPreview]] =
     sql"""

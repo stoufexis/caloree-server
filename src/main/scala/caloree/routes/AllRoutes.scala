@@ -22,7 +22,7 @@ object AllRoutes {
       r4: Run.Unique[F, (Username, Password), AccessToken],
       r9: Run.Many[F, (Description, UID), CustomFoodPreview],
       r10: Run.Many[F, Description, FoodPreview],
-      r11: Run.Many[F, (UID, Int, LocalDate), Log],
+      r11: Run.Many[F, (UID, Offset, LocalDate), Log],
       r12: Run.Unique[F, (ModifyLog, UID), Int],
       r13: Run.Optional[F, UID, UserWithNutrients],
       add: Run.Unique[F, (UID, Description, Nutrients), Int],
