@@ -1,5 +1,7 @@
 FROM postgres:14-alpine
 
+RUN mkdir /opt/check
+
 COPY static_foods.sql /opt/static_foods.sql
 COPY static_nutrient.sql /opt/static_nutrient.sql
 COPY static_food_nutrient.sql /opt/static_food_nutrient.sql
