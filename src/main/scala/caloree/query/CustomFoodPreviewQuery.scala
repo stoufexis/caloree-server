@@ -7,8 +7,13 @@ import caloree.model.Types.{Description, EntityId, Page, UID}
 import caloree.model.{CustomFood, CustomFoodPreview, User}
 
 object CustomFoodPreviewQuery {
-  def customFoodsPreviewByDescription(description: Description, user: UID, page: Page, limit: Int)(
-      implicit lh: LogHandler): ConnectionIO[List[CustomFoodPreview]] =
+  def customFoodsPreviewByDescription(
+      description: Description,
+      user: UID,
+      page: Page,
+      limit: Int)(
+      implicit lh: LogHandler
+  ): ConnectionIO[List[CustomFoodPreview]] =
     sql"""
       select id, description
       from   custom_food
@@ -16,8 +21,6 @@ object CustomFoodPreviewQuery {
       and    user_id = $user
       limit  $limit
       offset $page * $limit
-    """
-      .query[CustomFoodPreview]
-      .to[List]
+    """.query[CustomFoodPreview].to
 
 }

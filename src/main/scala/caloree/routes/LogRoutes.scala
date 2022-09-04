@@ -2,9 +2,10 @@ package caloree.routes
 
 import org.http4s.dsl.Http4sDsl
 import org.http4s.{AuthedRoutes, EntityDecoder}
-import cats.data.EitherT
+
+import cats.MonadThrow
 import cats.syntax.all._
-import cats.{MonadThrow, Monoid}
+
 import caloree.dto.ModifyLog
 import caloree.model.Types.UID
 import caloree.model._
@@ -25,9 +26,11 @@ object LogRoutes {
     import dsl._
 
     AuthedRoutes.of {
-      case GET -> _ :? DateP(d) +& PageP(p) +& Limit(l) +& OffsetP(offset) as u => get.run((u.id, offset, d), p, l).asResponse
+      case GET -> _ :? DateP(d) +& PageP(p) +& Limit(l) +& OffsetP(offset) as u =>
+        get.run((u.id, offset, d), p, l).asResponse
 
-      case req @ POST -> _ as u => req.decode.foldF(_.asResponse, v => add.run((v, u.id)) *> Ok())
+      case req @ POST -> _ as u =>
+        req.decode.foldF(_.asResponse, v => add.run((v, u.id)) *> Ok())
     }
   }
 }
