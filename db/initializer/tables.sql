@@ -55,7 +55,7 @@ create table food_nutrient
 create table custom_food_nutrient
 (
     id             bigserial primary key,
-    custom_food_id bigint not null references custom_food,
+    custom_food_id bigint not null references custom_food on delete cascade,
     nutrient_id    bigint not null references nutrient,
     amount         real   not null,
     constraint unique_custom_food_id_nutrient_id unique (custom_food_id, nutrient_id)
