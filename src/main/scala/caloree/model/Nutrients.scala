@@ -5,7 +5,7 @@ import io.circe.{Decoder => CirceDecoder, Encoder => CirceEncoder}
 
 import caloree.model.Types.{Grams, Kcal}
 
-case class Nutrients(amount: Grams, energy: Kcal, protein: Grams, carbs: Grams, fat: Grams, fiber: Grams)
+case class Nutrients(energy: Kcal, protein: Grams, carbs: Grams, fat: Grams, fiber: Grams)
 
 object Nutrients {
   implicit val foodCirceDecoder: CirceDecoder[Nutrients] = deriveDecoder

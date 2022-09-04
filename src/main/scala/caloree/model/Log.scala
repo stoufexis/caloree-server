@@ -7,17 +7,19 @@ import doobie.implicits.javatimedrivernative._
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder => CirceDecoder, Encoder => CirceEncoder}
 
-import caloree.model.Types.{Description, EntityId, FID, Minute}
+import caloree.model.Types.{Description, EFID, EntityId, Grams, Minute}
 
 import java.time.LocalDate
 
 // TODO: Date needs to have time zone info
 case class Log(
-    id: FID,
+    id: EFID,
     day: LocalDate,
     minute: Minute,
     foodDescription: Description,
-    nutrients: Nutrients)
+    amount: Grams,
+    nutrients: Nutrients
+)
 
 object Log {
 
@@ -27,16 +29,17 @@ object Log {
       day: LocalDate,
       minute: Minute,
       foodDescription: Description,
+      amount: Grams,
       nutrients: Nutrients)
 
   implicit val readMealFood: Read[Log] =
-    Read[LogIn].map { case LogIn(foodId, customFoodId, day, minute, foodDescription, nutrients) =>
+    Read[LogIn].map { case LogIn(foodId, customFoodId, day, minute, foodDescription, amount, nutrients) =>
       // not exhaustive since database ensures one of the cases is matched
       val id = (foodId, customFoodId) match {
         case (Some(id), None) => Right(id)
         case (None, Some(id)) => Left(id)
       }
-      Log(id, day, minute, foodDescription, nutrients)
+      Log(id, day, minute, foodDescription, amount, nutrients)
     }
 
   implicit val foodCirceDecoder: CirceDecoder[Log] = deriveDecoder
