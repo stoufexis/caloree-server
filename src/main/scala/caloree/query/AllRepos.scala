@@ -2,11 +2,9 @@ package caloree.query
 
 import doobie.LogHandler
 import doobie.util.transactor.Transactor
-
 import cats.effect.MonadCancelThrow
-
 import caloree.dto.ModifyLog
-import caloree.model.Types.{AccessToken, Description, EntityId, Grams, Password, Username}
+import caloree.model.Types.{AccessToken, Description, EntityId, Grams, Password, UID, Username}
 import caloree.model.{CustomFood, CustomFoodPreview, Food, FoodPreview, Log, User}
 
 import java.time.LocalDate
@@ -21,11 +19,11 @@ object AllRepos {
     Run.unique((AuthQuery.getToken _).tupled)
 
   implicit def customFoodsPreviewByDescriptionRepo[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Many[F, (Description, EntityId[User]), CustomFoodPreview] =
+      implicit lh: LogHandler): Run.Many[F, (Description, UID), CustomFoodPreview] =
     Run.many { case ((d, u), p, l) => CustomFoodPreviewQuery.customFoodsPreviewByDescription(d, u, p, l) }
 
   implicit def customFoodByIdRepo[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Optional[F, (EntityId[CustomFood], EntityId[User]), CustomFood] =
+      implicit lh: LogHandler): Run.Optional[F, (EntityId[CustomFood], UID), CustomFood] =
     Run.option((CustomFoodQuery.customFoodById _).tupled)
 
   implicit def foodsPreviewByDescriptionRepo[F[_]: MonadCancelThrow: Transactor](
@@ -37,11 +35,11 @@ object AllRepos {
     Run.option((FoodQuery.foodById _).tupled)
 
   implicit def mealFoodByUserAndDateRepo[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Many[F, (EntityId[User], LocalDate), Log] =
-    Run.many { case ((u, d), page, limit) => MealFoodQuery.logByUserAndDate(u, d, page, limit) }
+      implicit lh: LogHandler): Run.Many[F, (UID, Int, LocalDate), Log] =
+    Run.many { case ((u, offset, d), page, limit) => MealFoodQuery.logByUserAndDate(u, d, offset, page, limit) }
 
   implicit def insertMealFoodRepos[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Unique[F, (ModifyLog, EntityId[User]), Int] =
+      implicit lh: LogHandler): Run.Unique[F, (ModifyLog, UID), Int] =
     Run.unique {
       case (ModifyLog.Add(fid, amount, day, minute), user) =>
         MealFoodQuery.insertLog(fid, amount, day, minute, user)
@@ -51,6 +49,9 @@ object AllRepos {
 
       case (ModifyLog.Modify(fid, newAmount, day, minute), user) =>
         MealFoodQuery.logModification(fid, newAmount, day, minute, user)
+
+      case (ModifyLog.Undo(day, times), user) =>
+        MealFoodQuery.undoLog(user, day, times)
     }
 
 }

@@ -70,6 +70,7 @@ create table "log"
     "day"          date     not null,
     "minute"       smallint not null,
     user_id        bigint   not null references "user" (id),
+    generated_at   timestamp without time zone default now(),
     check ( "minute" >= 0 and "minute" < 1440),
     check ((food_id is not null and custom_food_id is null)
         or (food_id is null and custom_food_id is not null))

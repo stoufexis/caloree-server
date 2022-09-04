@@ -22,7 +22,7 @@ object AllRoutes {
       r4: Run.Unique[F, (Username, Password), AccessToken],
       r9: Run.Many[F, (Description, UID), CustomFoodPreview],
       r10: Run.Many[F, Description, FoodPreview],
-      r11: Run.Many[F, (UID, LocalDate), Log],
+      r11: Run.Many[F, (UID, Int, LocalDate), Log],
       r18: Run.Unique[F, (ModifyLog, UID), Int]
   ): HttpRoutes[F] = Router(
     "auth"        -> AuthRoutes.routes,

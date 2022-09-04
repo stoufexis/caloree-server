@@ -20,4 +20,5 @@ object Params {
   object FoodIdP       extends QueryParamDecoderMatcher[EntityId[Food]]("food_id")
   object DateP         extends QueryParamDecoderMatcher[LocalDate]("date")
   object GramsP        extends QueryParamDecoderMatcher[Grams]("grams")
+  object OffsetP       extends QueryParamDecoderMatcher[Int]("offset")
 }
