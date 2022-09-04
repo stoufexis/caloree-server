@@ -8,8 +8,11 @@ import caloree.model.Types._
 import caloree.model.{User, UserWithNutrients}
 
 object UserQuery {
-  def verifyCredentials(username: Username, accessToken: AccessToken)(implicit
-      lh: LogHandler): ConnectionIO[Option[User]] =
+  def verifyCredentials(
+      username: Username,
+      accessToken: AccessToken)(
+      implicit lh: LogHandler
+  ): ConnectionIO[Option[User]] =
     sql"""
       select s.id, s.username, s.token
       from (select u.id, u.username, token.token

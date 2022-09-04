@@ -17,7 +17,7 @@ object LogRoutes {
   def routes[F[_]: MonadThrow: EntityDecoder[*[_], ModifyLog]](
       implicit
       get: Run.Many[F, (UID, Offset, LocalDate), Log],
-      add: Run.Unique[F, (ModifyLog, UID), Int]
+      add: Run.Update[F, (ModifyLog, UID)]
   ): AuthedRoutes[User, F] = {
     val dsl = Http4sDsl[F]
     import dsl._

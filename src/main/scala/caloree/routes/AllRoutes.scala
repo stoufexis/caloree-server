@@ -23,10 +23,10 @@ object AllRoutes {
       r9: Run.Many[F, (Description, UID), CustomFoodPreview],
       r10: Run.Many[F, Description, FoodPreview],
       r11: Run.Many[F, (UID, Offset, LocalDate), Log],
-      r12: Run.Unique[F, (ModifyLog, UID), Int],
+      r12: Run.Update[F, (ModifyLog, UID)],
       r13: Run.Optional[F, UID, UserWithNutrients],
-      add: Run.Unique[F, (UID, Description, Nutrients), Int],
-      delete: Run.Unique[F, CFID, Int]
+      add: Run.Update[F, (UID, Description, Nutrients)],
+      delete: Run.Update[F, CFID]
   ): HttpRoutes[F] = Router(
     "token"       -> AuthRoutes.routes,
     "user"        -> auth(UserRoutes.routes),

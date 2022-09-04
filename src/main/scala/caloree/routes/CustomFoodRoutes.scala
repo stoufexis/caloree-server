@@ -18,8 +18,8 @@ object CustomFoodRoutes {
       implicit
       getOne: Run.Optional[F, (CFID, UID), CustomFood],
       getMany: Run.Many[F, (Description, UID), CustomFoodPreview],
-      add: Run.Unique[F, (UID, Description, Nutrients), Int],
-      delete: Run.Unique[F, CFID, Int]
+      add: Run.Update[F, (UID, Description, Nutrients)],
+      delete: Run.Update[F, CFID]
   ): AuthedRoutes[User, F] = {
     val dsl = Http4sDsl[F]
     import dsl._

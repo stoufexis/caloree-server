@@ -39,8 +39,8 @@ object AllRepos {
     Run.many { case ((u, offset, d), page, limit) => LogQuery.logByUserAndDate(u, d, offset, page, limit) }
 
   implicit def insertMealFoodRepos[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Unique[F, (ModifyLog, UID), Int] =
-    Run.unique {
+      implicit lh: LogHandler): Run.Update[F, (ModifyLog, UID)] =
+    Run.update {
       case (ModifyLog.Add(fid, amount, day, minute), user) =>
         LogQuery.insertLog(fid, amount, day, minute, user)
 
@@ -59,11 +59,11 @@ object AllRepos {
     Run.option(UserQuery.getUserWithNutrients)
 
   implicit def insertCustomFood[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Unique[F, (UID, Description, Nutrients), Int] =
-    Run.unique((CustomFoodQuery.insertCustomFood _).tupled)
+      implicit lh: LogHandler): Run.Update[F, (UID, Description, Nutrients)] =
+    Run.update((CustomFoodQuery.insertCustomFood _).tupled)
 
   implicit def deleteCustomFood[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Unique[F, CFID, Int] =
-    Run.unique(CustomFoodQuery.deleteCustomFood)
+      implicit lh: LogHandler): Run.Update[F, CFID] =
+    Run.update(CustomFoodQuery.deleteCustomFood)
 
 }
