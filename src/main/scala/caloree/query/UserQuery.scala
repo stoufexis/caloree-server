@@ -1,13 +1,15 @@
 package caloree.query
 
-import caloree.model.Types._
-import caloree.model.User
 import doobie._
 import doobie.implicits._
 import doobie.util.log.{ExecFailure, ProcessingFailure, Success}
 
-object AuthQuery {
-  def verifyCredentials(username: Username, accessToken: AccessToken)(implicit lh: LogHandler): ConnectionIO[Option[User]] =
+import caloree.model.Types._
+import caloree.model.{User, UserWithNutrients}
+
+object UserQuery {
+  def verifyCredentials(username: Username, accessToken: AccessToken)(implicit
+      lh: LogHandler): ConnectionIO[Option[User]] =
     sql"""
       select s.id, s.username, s.token
       from (select u.id, u.username, token.token
@@ -17,9 +19,7 @@ object AuthQuery {
             order by generated_at desc
             limit 1) as s
       where s.token = $accessToken :: uuid;
-    """
-      .query[User]
-      .option
+    """.query[User].option
 
   def getToken(username: Username, password: Password)(implicit lh: LogHandler): ConnectionIO[AccessToken] =
     sql"""
@@ -28,8 +28,13 @@ object AuthQuery {
       from "user"
       where username      = $username
       and hashed_password = sha256($password::bytea)
-    """
-      .update
-      .withUniqueGeneratedKeys("token")
+    """.update.withUniqueGeneratedKeys("token")
+
+  def getUserWithNutrients(id: UID): ConnectionIO[Option[UserWithNutrients]] =
+    sql"""
+     select id, username, energy, protein, carbs, fat, fiber 
+     from user_with_target_nutrients_view 
+     where id = $id
+    """.query[UserWithNutrients].option
 
 }
