@@ -2,6 +2,8 @@ services:
   postgres:
     container_name: postgres
     image: postgres:14-alpine
+    volumes:
+      - db_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD
     ports:
@@ -9,12 +11,22 @@ services:
 
   postgres_initializer:
     container_name: postgres_initializer
+    build:
+      context: ./initializer
+      dockerfile: Dockerfile
+    volumes:
+      - initializer_data:/opt/check
     depends_on:
       - postgres
     environment:
       - PGPASSWORD
       - DEFAULT_USERNAME
       - DEFAULT_PASSWORD
-    build:
-      context: ./initializer
-      dockerfile: Dockerfile
+
+volumes:
+  db_data:
+    external: true
+    name: db_data
+  initializer_data:
+    external: true
+    name: initializer_data
