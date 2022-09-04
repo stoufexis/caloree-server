@@ -20,11 +20,13 @@ object Types {
   @newtype case class Password(string: String)
   @newtype case class Minute(string: String)
 
-  type UID = EntityId[User]
-  type FID = Either[EntityId[CustomFood], EntityId[Food]]
+  type UID  = EntityId[User]
+  type CFID = EntityId[CustomFood]
+  type FID  = EntityId[Food]
+  type EFID = Either[EntityId[CustomFood], EntityId[Food]]
 
-  implicit val eitherIdsDecoder: CirceDecoder[FID] = CirceDecoder.decodeEither("custom_food_id", "food_id")
-  implicit val eitherIdsEncoder: CirceEncoder[FID] = CirceEncoder.encodeEither("custom_food_id", "food_id")
+  implicit val eitherIdsDecoder: CirceDecoder[EFID] = CirceDecoder.decodeEither("custom_food_id", "food_id")
+  implicit val eitherIdsEncoder: CirceEncoder[EFID] = CirceEncoder.encodeEither("custom_food_id", "food_id")
 
   object Minute {
     implicit val putMinute: Put[Minute]                   = deriving

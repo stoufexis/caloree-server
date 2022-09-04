@@ -8,16 +8,16 @@ import io.circe.generic.extras.auto._
 
 import cats.effect.kernel.Concurrent
 
-import caloree.model.Types.{FID, Grams, Minute}
+import caloree.model.Types.{EFID, Grams, Minute}
 
 import java.time.LocalDate
 
 sealed trait ModifyLog
 
 object ModifyLog {
-  case class Add(fid: FID, amount: Grams, day: LocalDate, minute: Minute)       extends ModifyLog
-  case class Remove(fid: FID, day: LocalDate, minute: Minute)                   extends ModifyLog
-  case class Modify(fid: FID, newAmount: Grams, day: LocalDate, minute: Minute) extends ModifyLog
+  case class Add(fid: EFID, amount: Grams, day: LocalDate, minute: Minute)       extends ModifyLog
+  case class Remove(fid: EFID, day: LocalDate, minute: Minute)                   extends ModifyLog
+  case class Modify(fid: EFID, newAmount: Grams, day: LocalDate, minute: Minute) extends ModifyLog
   case class Undo(day: LocalDate, times: Int)                                   extends ModifyLog
 
   implicit val jsonDiscriminator: Configuration = Configuration.default.withDiscriminator("type")

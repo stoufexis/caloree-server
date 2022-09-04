@@ -13,8 +13,14 @@ import caloree.model.{CustomFood, Food, Log, User}
 import java.time.LocalDate
 
 object LogQuery {
-  def logByUserAndDate(user: UID, date: LocalDate, offset: Int, page: Page, limit: Int)(
-      implicit l: LogHandler): ConnectionIO[List[Log]] =
+  def logByUserAndDate(
+      user: UID,
+      date: LocalDate,
+      offset: Int,
+      page: Page,
+      limit: Int)(
+      implicit l: LogHandler
+  ): ConnectionIO[List[Log]] =
     sql"""
         select food_id, custom_food_id, "day", "minute", description, amount, energy, protein, carbs, fat, fiber
         from   log_with_nutrients_with_offset($offset)
@@ -37,7 +43,7 @@ object LogQuery {
         )
     """.update.run
 
-  def insertLog(fid: FID, amount: Grams, day: LocalDate, minute: Minute, user: UID)(
+  def insertLog(fid: EFID, amount: Grams, day: LocalDate, minute: Minute, user: UID)(
       implicit l: LogHandler): ConnectionIO[Int] = {
     val foodId       = fid.toOption
     val customFoodId = fid.swap.toOption
@@ -48,7 +54,7 @@ object LogQuery {
     """.update.run
   }
 
-  def logDeletion(fid: FID, day: LocalDate, minute: Minute, user: UID)(implicit l: LogHandler): ConnectionIO[Int] =
+  def logDeletion(fid: EFID, day: LocalDate, minute: Minute, user: UID)(implicit l: LogHandler): ConnectionIO[Int] =
     fid match {
       case Left(fid) =>
         sql"""
@@ -67,7 +73,7 @@ object LogQuery {
         """.update.run
     }
 
-  def logModification(fid: FID, newAmount: Grams, day: LocalDate, minute: Minute, user: UID)(
+  def logModification(fid: EFID, newAmount: Grams, day: LocalDate, minute: Minute, user: UID)(
       implicit l: LogHandler): ConnectionIO[Int] =
     fid match {
       case Left(fid) =>

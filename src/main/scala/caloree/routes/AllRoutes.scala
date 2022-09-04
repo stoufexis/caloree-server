@@ -17,15 +17,19 @@ object AllRoutes {
       implicit
       auth: AuthMiddleware[F, User],
       r1: Run.Optional[F, (Username, AccessToken), User],
-      r2: Run.Optional[F, (EntityId[CustomFood], UID), CustomFood],
-      r3: Run.Optional[F, (EntityId[Food], Grams), Food],
+      r2: Run.Optional[F, (CFID, UID), CustomFood],
+      r3: Run.Optional[F, (FID, Grams), Food],
       r4: Run.Unique[F, (Username, Password), AccessToken],
       r9: Run.Many[F, (Description, UID), CustomFoodPreview],
       r10: Run.Many[F, Description, FoodPreview],
       r11: Run.Many[F, (UID, Int, LocalDate), Log],
-      r18: Run.Unique[F, (ModifyLog, UID), Int]
+      r12: Run.Unique[F, (ModifyLog, UID), Int],
+      r13: Run.Optional[F, UID, UserWithNutrients],
+      add: Run.Unique[F, (UID, Description, Nutrients), Int],
+      delete: Run.Unique[F, CFID, Int]
   ): HttpRoutes[F] = Router(
-    "auth"        -> AuthRoutes.routes,
+    "token"       -> AuthRoutes.routes,
+    "user"        -> auth(UserRoutes.routes),
     "log"         -> auth(LogRoutes.routes),
     "custom-food" -> auth(CustomFoodRoutes.routes),
     "food"        -> auth(FoodRoutes.routes)
