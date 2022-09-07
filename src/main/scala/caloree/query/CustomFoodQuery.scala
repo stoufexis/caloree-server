@@ -6,12 +6,12 @@ import doobie.implicits._
 import cats.syntax.all._
 
 import caloree.model.Types._
-import caloree.model.{CustomFood, Nutrients, User}
+import caloree.model.{CustomFood, Nutrients}
 
 object CustomFoodQuery {
   def customFoodById(id: CFID, user: UID)(implicit lh: LogHandler): ConnectionIO[Option[CustomFood]] =
     sql"""
-      select id, user_id, description, energy, protein, carbs, fat, fiber
+      select id, user_id, description, 100, energy, protein, carbs, fat, fiber
       from custom_food_with_nutrients_view
       where id      = $id
       and   user_id = $user

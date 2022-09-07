@@ -14,7 +14,7 @@ object CustomFoodPreviewQuery {
       implicit lh: LogHandler
   ): ConnectionIO[List[CustomFoodPreview]] =
     sql"""
-      select id, description
+      select id, user_id, description
       from   custom_food
       where  description_tsvector @@ to_tsquery('english', $description)
       and    user_id = $user
