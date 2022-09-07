@@ -40,13 +40,13 @@ create or replace function log_with_nutrients_with_offset(int)
             )
 as
 '
-    select food_id,
+    select food_id                                   as food_id,
            null                                      as custom_food_id,
-           "day",
-           "minute",
-           f.description,
-           lav.user_id,
-           amount,
+           "day"                                     as "day",
+           "minute"                                  as "minute",
+           f.description                             as description,
+           lav.user_id                               as user_id,
+           amount                                    as amount,
            (fwnv.energy * (lav.amount / 100))::real  as energy,
            (fwnv.protein * (lav.amount / 100))::real as protein,
            (fwnv.carbs * (lav.amount / 100))::real   as carbs,
@@ -57,12 +57,12 @@ as
              inner join foods_with_nutrients_view fwnv on fwnv.id = f.id
     union
     select null                                       as food_id,
-           custom_food_id,
-           "day",
-           "minute",
-           cf.description,
-           lav.user_id,
-           amount,
+           custom_food_id                             as custom_food_id,
+           "day"                                      as "day",
+           "minute"                                   as "minute",
+           cf.description                             as description,
+           lav.user_id                                as user_id,
+           amount                                     as amount,
            (cfwnv.energy * (lav.amount / 100))::real  as energy,
            (cfwnv.protein * (lav.amount / 100))::real as protein,
            (cfwnv.carbs * (lav.amount / 100))::real   as carbs,
