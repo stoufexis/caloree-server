@@ -4,19 +4,15 @@ import doobie.LogHandler
 import doobie.util.transactor.Transactor
 import cats.effect.MonadCancelThrow
 import caloree.dto.ModifyLog
-import caloree.model.Types.{AccessToken, CFID, Description, EntityId, FID, Grams, Offset, Password, UID, Username}
+import caloree.model.Types.{AccessToken, CFID, Description, EntityId, FID, Grams, MinuteInterval, Offset, Password, UID, Username}
 import caloree.model.{CustomFood, CustomFoodPreview, Food, FoodPreview, Log, Nutrients, User, UserWithNutrients}
 
 import java.time.LocalDate
 
 object AllRepos {
   implicit def verifyCredentialsRepo[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Optional[F, (Username, AccessToken), User] =
-    Run.option((UserQuery.verifyCredentials _).tupled)
-
-  implicit def getTokenRepo[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Unique[F, (Username, Password), AccessToken] =
-    Run.unique((UserQuery.getToken _).tupled)
+      implicit lh: LogHandler): Run.Optional[F, (Username, Password), User] =
+    Run.option((UserQuery.login _).tupled)
 
   implicit def customFoodsPreviewByDescriptionRepo[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Many[F, (Description, UID), CustomFoodPreview] =
@@ -35,8 +31,8 @@ object AllRepos {
     Run.option((FoodQuery.foodById _).tupled)
 
   implicit def mealFoodByUserAndDateRepo[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Many[F, (UID, Offset, LocalDate), Log] =
-    Run.many { case ((u, offset, d), page, limit) => LogQuery.logByUserAndDate(u, d, offset, page, limit) }
+      implicit lh: LogHandler): Run.Many[F, (UID, Offset, LocalDate, MinuteInterval), Log] =
+    Run.many { case ((u, o, d, m), page, limit) => LogQuery.logByUserAndDate(u, d, o, page, limit, m) }
 
   implicit def insertMealFoodRepos[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Update[F, (ModifyLog, UID)] =
@@ -50,8 +46,8 @@ object AllRepos {
       case (ModifyLog.Modify(fid, newAmount, day, minute), user) =>
         LogQuery.logModification(fid, newAmount, day, minute, user)
 
-      case (ModifyLog.Undo(day, times), user) =>
-        LogQuery.undoLog(user, day, times)
+      case (ModifyLog.Undo(fid, day, minute, times), user) =>
+        LogQuery.undoLog(user, fid, day, minute, times)
     }
 
   implicit def getUserWithNutrients[F[_]: MonadCancelThrow: Transactor](

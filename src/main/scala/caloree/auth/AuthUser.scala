@@ -1,26 +1,30 @@
 package caloree.auth
 
+import org.http4s.BasicCredentials
+import org.http4s.headers.Authorization
 import org.http4s.server.AuthMiddleware
 
 import cats.Monad
 import cats.data.{Kleisli, OptionT}
 import cats.syntax.all._
 
-import caloree.model.Types.{AccessToken, Username}
+import caloree.model.Types.{Password, Username}
 import caloree.model.User
 import caloree.query.Run
-import caloree.util.extractHeaders
 
 object AuthUser {
-  def apply[F[_]: Monad](implicit get: Run.Optional[F, (Username, AccessToken), User]): AuthMiddleware[F, User] =
+  def apply[F[_]: Monad](implicit get: Run.Optional[F, (Username, Password), User]): AuthMiddleware[F, User] =
     AuthMiddleware {
       Kleisli { req =>
-        OptionT {
-          extractHeaders(req.headers, ("USER-ID", "AUTH-TOKEN"), Username(_), AccessToken(_))
+        OptionT apply
+          req.headers
+            .get[Authorization]
+            .map(_.credentials)
+            .collect { case BasicCredentials(u, p) => (Username(u), Password(p)) }
             .map(get.run)
             .traverse(identity)
             .map(_.flatten)
-        }
+
       }
     }
 }

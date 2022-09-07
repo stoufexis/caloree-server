@@ -2,6 +2,9 @@ package caloree.query
 
 import doobie._
 import doobie.implicits._
+
+import cats.syntax.all._
+
 import caloree.model.Types._
 import caloree.model.{CustomFood, Nutrients, User}
 
@@ -14,29 +17,24 @@ object CustomFoodQuery {
       and   user_id = $user
     """.query[CustomFood].option
 
-  private def insertToCustomFoodNutrient(customFoodId: CFID, nutrientId: Int, amount: Float): ConnectionIO[Int] =
+  private def insertToCustomFoodNutrient(customFoodId: CFID, nutrientId: Int, amount: Float): ConnectionIO[Unit] =
     sql"""
       insert into custom_food_nutrient (custom_food_id, nutrient_id, amount) 
       values ($customFoodId, $nutrientId, $amount)
-    """
-      .update.run
+    """.update.run.as()
 
-  def insertCustomFood(
-      id: UID,
-      description: Description,
-      nutrients: Nutrients
-  ): ConnectionIO[Int] = for {
+  def insertCustomFood(id: UID, description: Description, nutrients: Nutrients): ConnectionIO[Unit] = for {
     id <- sql"insert into custom_food (description, user_id) values ($description, $id)"
       .update.withUniqueGeneratedKeys[CFID]("id")
 
-    l1 <- insertToCustomFoodNutrient(id, 1008, nutrients.energy.toFloat)
-    l2 <- insertToCustomFoodNutrient(id, 1003, nutrients.protein.toFloat)
-    l3 <- insertToCustomFoodNutrient(id, 1005, nutrients.carbs.toFloat)
-    l4 <- insertToCustomFoodNutrient(id, 1004, nutrients.fat.toFloat)
-    l5 <- insertToCustomFoodNutrient(id, 1079, nutrients.fiber.toFloat)
-  } yield l1 + l2 + l3 + l4 + l5
+    _ <- insertToCustomFoodNutrient(id, 1008, nutrients.energy.toFloat)
+    _ <- insertToCustomFoodNutrient(id, 1003, nutrients.protein.toFloat)
+    _ <- insertToCustomFoodNutrient(id, 1005, nutrients.carbs.toFloat)
+    _ <- insertToCustomFoodNutrient(id, 1004, nutrients.fat.toFloat)
+    _ <- insertToCustomFoodNutrient(id, 1079, nutrients.fiber.toFloat)
+  } yield ()
 
-  def deleteCustomFood(id: CFID): ConnectionIO[Int] =
+  def deleteCustomFood(id: CFID): ConnectionIO[Unit] =
     sql"delete from custom_food where id = $id"
-      .update.run
+      .update.run.as()
 }

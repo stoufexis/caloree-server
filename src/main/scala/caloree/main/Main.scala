@@ -30,7 +30,7 @@ object Main extends IOApp.Simple {
 
   val app: IO[Nothing] =
     ConfigSource.default.load[Config]
-      .map { case Config(db, api, _) =>
+      .map { case Config(db, api) =>
         implicit val xa: Transactor[IO] = DBConfig.transactor(db)
 
         import AllRepos._
