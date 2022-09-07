@@ -2,14 +2,12 @@ package caloree.model
 
 import doobie.{Get, Put}
 
-import org.http4s.QueryParamDecoder
+import org.http4s.{ParseFailure, QueryParamDecoder, QueryParameterValue}
 
 import io.circe.{Decoder => CirceDecoder, Encoder => CirceEncoder}
 import io.estatico.newtype.macros.newtype
 
-import cats.Functor
-
-import java.time.LocalDate
+import cats.syntax.all._
 
 object Types {
   @newtype case class EntityId[A](toLong: Long)
@@ -20,9 +18,25 @@ object Types {
   @newtype case class Username(string: String)
   @newtype case class AccessToken(string: String)
   @newtype case class Password(string: String)
-  @newtype case class Minute(string: String)
+  @newtype case class Minute(string: Int)
   @newtype case class Limit(toInt: Int)
   @newtype case class Offset(toInt: Int)
+
+  case class MinuteInterval(start: Minute, end: Minute)
+
+  object MinuteInterval {
+    implicit val queryParamDInterval: QueryParamDecoder[MinuteInterval] = {
+      case QueryParameterValue(value) =>
+        value.split("-").toList match {
+          case start :: end :: Nil =>
+            (start.toIntOption product end.toIntOption)
+              .map { case (s, e) => MinuteInterval(Minute(s), Minute(e)) }
+              .toValidNel(ParseFailure.apply(value, ""))
+
+          case _ => ParseFailure(value, "").invalidNel
+        }
+    }
+  }
 
   type UID = EntityId[User]
 
