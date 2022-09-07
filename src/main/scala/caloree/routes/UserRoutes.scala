@@ -16,7 +16,7 @@ object UserRoutes {
     import dsl._
 
     AuthedRoutes.of {
-      case GET -> _ as User(id, _, _) => get.run(id).asResponse
+      case GET -> _ as User(id, _) => get.run(id).asResponse
     }
   }
 }
