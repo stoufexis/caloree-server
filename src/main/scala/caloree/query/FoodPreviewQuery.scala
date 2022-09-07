@@ -16,7 +16,7 @@ object FoodPreviewQuery {
     sql"""
       select id, description
       from food
-      where description_tsvector @@ to_tsquery('english', $description)
+      where description_tsvector @@ plainto_tsquery('english', $description)
       limit $limit
       offset $page * $limit
     """.query[FoodPreview].to
