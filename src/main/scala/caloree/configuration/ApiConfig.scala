@@ -20,7 +20,7 @@ object ApiConfig {
     Resource.eval(host product port)
       .flatMap { case (host, port) =>
         EmberServerBuilder
-          .default[F]
+          .default
           .withHost(host)
           .withPort(port)
           .withHttpApp(app)
