@@ -5,7 +5,7 @@ import io.circe.{Decoder => CirceDecoder, Encoder => CirceEncoder}
 
 import caloree.model.Types.{CFID, Description, EntityId, Grams, UID}
 
-case class CustomFood(id: CFID, userId: UID, description: Description, amount: Grams, nutrients: Nutrients)
+case class CustomFood(id: CFID, userId: UID, description: Description, grams: Grams, nutrients: Nutrients)
 
 object CustomFood {
   implicit val foodCirceDecoder: CirceDecoder[CustomFood] = deriveDecoder
