@@ -21,7 +21,7 @@ object AllRoutes {
       r3: Run.Optional[F, (FID, Grams), Food],
       r9: Run.Many[F, (Description, UID), CustomFoodPreview],
       r10: Run.Many[F, Description, FoodPreview],
-      r11: Run.Many[F, (UID, Offset, LocalDate, MinuteInterval), Log],
+      r11: Run.Many[F, (UID, Option[EFID], Offset, LocalDate, MinuteInterval), Log],
       r12: Run.Update[F, (ModifyLog, UID)],
       r13: Run.Optional[F, UID, UserWithNutrients],
       add: Run.Update[F, (UID, Description, Nutrients)],

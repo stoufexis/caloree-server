@@ -15,6 +15,7 @@ import java.time.LocalDate
 object LogQuery {
   def logByUserAndDate(
       user: UID,
+      fid: Option[EFID],
       day: LocalDate,
       offset: Offset,
       page: Page,
@@ -23,18 +24,46 @@ object LogQuery {
       implicit l: LogHandler
   ): ConnectionIO[List[Log]] = {
     val MinuteInterval(start, end) = minute
-    sql"""
-        select food_id, custom_food_id, "day", "minute", description, amount, energy, protein, carbs, fat, fiber
-        from   log_with_nutrients_with_offset($offset)
-        where  user_id = $user
-        and    "day" = $day
-        and    amount > 0
-        and    "minute" >= $start
-        and    "minute" < $end
-        order by "minute"
-        limit  $limit
-        offset $page * $limit
-    """.query[Log].to
+    fid match {
+      case Some(Left(fid))  =>
+        sql"""
+          select food_id, custom_food_id, "day", "minute", description, amount, energy, protein, carbs, fat, fiber
+          from   log_with_nutrients_with_offset($offset)
+          where  user_id = $user
+          and    "day" = $day
+          and    amount > 0
+          and    "minute" >= $start and "minute" < $end
+          and    custom_food_id = $fid
+          order by "minute"
+          limit  $limit
+          offset $page * $limit
+        """.query[Log].to
+      case Some(Right(fid)) =>
+        sql"""
+          select food_id, custom_food_id, "day", "minute", description, amount, energy, protein, carbs, fat, fiber
+          from   log_with_nutrients_with_offset($offset)
+          where  user_id = $user
+          and    "day" = $day
+          and    amount > 0
+          and    "minute" >= $start and "minute" < $end
+          and    food_id = $fid
+          order by "minute"
+          limit  $limit
+          offset $page * $limit
+        """.query[Log].to
+      case None             =>
+        sql"""
+          select food_id, custom_food_id, "day", "minute", description, amount, energy, protein, carbs, fat, fiber
+          from   log_with_nutrients_with_offset($offset)
+          where  user_id = $user
+          and    "day" = $day
+          and    amount > 0
+          and    "minute" >= $start and "minute" < $end
+          order by "minute"
+          limit  $limit
+          offset $page * $limit
+        """.query[Log].to
+    }
   }
 
   def undoLog(user: UID, fid: Option[EFID], day: LocalDate, minute: MinuteInterval, times: Int): ConnectionIO[Unit] = {

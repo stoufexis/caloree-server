@@ -2,9 +2,24 @@ package caloree.query
 
 import doobie.LogHandler
 import doobie.util.transactor.Transactor
+
 import cats.effect.MonadCancelThrow
+
 import caloree.dto.ModifyLog
-import caloree.model.Types.{AccessToken, CFID, Description, EntityId, FID, Grams, MinuteInterval, Offset, Password, UID, Username}
+import caloree.model.Types.{
+  AccessToken,
+  CFID,
+  Description,
+  EFID,
+  EntityId,
+  FID,
+  Grams,
+  MinuteInterval,
+  Offset,
+  Password,
+  UID,
+  Username
+}
 import caloree.model.{CustomFood, CustomFoodPreview, Food, FoodPreview, Log, Nutrients, User, UserWithNutrients}
 
 import java.time.LocalDate
@@ -31,8 +46,8 @@ object AllRepos {
     Run.option((FoodQuery.foodById _).tupled)
 
   implicit def mealFoodByUserAndDateRepo[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Many[F, (UID, Offset, LocalDate, MinuteInterval), Log] =
-    Run.many { case ((u, o, d, m), page, limit) => LogQuery.logByUserAndDate(u, d, o, page, limit, m) }
+      implicit lh: LogHandler): Run.Many[F, (UID, Option[EFID], Offset, LocalDate, MinuteInterval), Log] =
+    Run.many { case ((u, i, o, d, m), page, limit) => LogQuery.logByUserAndDate(u, i, d, o, page, limit, m) }
 
   implicit def insertMealFoodRepos[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Update[F, (ModifyLog, UID)] =
