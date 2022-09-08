@@ -16,7 +16,7 @@ case class Log(
     id: EFID,
     day: LocalDate,
     minute: Minute,
-    foodDescription: Description,
+    description: Description,
     amount: Grams,
     nutrients: Nutrients
 )
