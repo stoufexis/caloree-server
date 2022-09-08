@@ -19,8 +19,8 @@ import java.time.LocalDate
 object LogRoutes {
 
   object IntervalP extends QueryParamDecoderMatcher[MinuteInterval]("interval")
-  object OFoodIdP  extends OptionalQueryParamDecoderMatcher[EntityId[Food]]("food_id")
-  object OCFoodIdP extends OptionalQueryParamDecoderMatcher[EntityId[CustomFood]]("custom_food_id")
+  object OFIDP     extends OptionalQueryParamDecoderMatcher[EntityId[Food]]("food_id")
+  object OCFIDP    extends OptionalQueryParamDecoderMatcher[EntityId[CustomFood]]("custom_food_id")
 
   def routes[F[_]: MonadThrow: EntityDecoder[*[_], ModifyLog]](
       implicit
@@ -31,10 +31,10 @@ object LogRoutes {
     import dsl._
 
     AuthedRoutes.of {
-      case GET -> _ :? OFoodIdP(fid) +& DateP(d) +& PageP(p) +& LimitP(l) +& OffsetP(offset) +& IntervalP(mi) as u =>
+      case GET -> _ :? OFIDP(fid) +& DateP(d) +& PageP(p) +& LimitP(l) +& OffsetP(offset) +& IntervalP(mi) as u =>
         get.run((u.id, fid.map(Right(_)), offset, d, mi), p, l).asResponse
 
-      case GET -> _ :? OCFoodIdP(cfid) +& DateP(d) +& PageP(p) +& LimitP(l) +& OffsetP(offset) +& IntervalP(mi) as u =>
+      case GET -> _ :? OCFIDP(cfid) +& DateP(d) +& PageP(p) +& LimitP(l) +& OffsetP(offset) +& IntervalP(mi) as u =>
         get.run((u.id, cfid.map(Left(_)), offset, d, mi), p, l).asResponse
 
       case req @ POST -> _ as u =>

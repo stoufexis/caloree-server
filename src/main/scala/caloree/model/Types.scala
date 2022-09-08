@@ -18,7 +18,7 @@ object Types {
   @newtype case class Username(string: String)
   @newtype case class AccessToken(string: String)
   @newtype case class Password(string: String)
-  @newtype case class Minute(string: Int)
+  @newtype case class Minute(toInt: Int)
   @newtype case class Limit(toInt: Int)
   @newtype case class Offset(toInt: Int)
 
