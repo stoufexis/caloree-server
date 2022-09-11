@@ -40,34 +40,34 @@ create or replace function log_with_nutrients_with_offset(int)
             )
 as
 '
-    select food_id                                   as food_id,
-           null                                      as custom_food_id,
-           "day"                                     as "day",
-           "minute"                                  as "minute",
-           f.description                             as description,
-           lav.user_id                               as user_id,
-           amount                                    as amount,
-           (fwnv.energy * (lav.amount / 100))::real  as energy,
-           (fwnv.protein * (lav.amount / 100))::real as protein,
-           (fwnv.carbs * (lav.amount / 100))::real   as carbs,
-           (fwnv.fat * (lav.amount / 100))::real     as fat,
-           (fwnv.fiber * (lav.amount / 100))::real   as fiber
+    select food_id                                                   as food_id,
+           null                                                      as custom_food_id,
+           "day"                                                     as "day",
+           "minute"                                                  as "minute",
+           f.description                                             as description,
+           lav.user_id                                               as user_id,
+           amount                                                    as amount,
+           (fwnv.energy * (lav.amount :: real / 100 :: real))::real  as energy,
+           (fwnv.protein * (lav.amount :: real / 100 :: real))::real as protein,
+           (fwnv.carbs * (lav.amount :: real / 100 :: real))::real   as carbs,
+           (fwnv.fat * (lav.amount :: real / 100 :: real))::real     as fat,
+           (fwnv.fiber * (lav.amount :: real / 100 :: real))::real   as fiber
     from log_aggregated_with_offset($1) lav
              inner join food f on f.id = lav.food_id
              inner join foods_with_nutrients_view fwnv on fwnv.id = f.id
     union
-    select null                                       as food_id,
-           custom_food_id                             as custom_food_id,
-           "day"                                      as "day",
-           "minute"                                   as "minute",
-           cf.description                             as description,
-           lav.user_id                                as user_id,
-           amount                                     as amount,
-           (cfwnv.energy * (lav.amount / 100))::real  as energy,
-           (cfwnv.protein * (lav.amount / 100))::real as protein,
-           (cfwnv.carbs * (lav.amount / 100))::real   as carbs,
-           (cfwnv.fat * (lav.amount / 100))::real     as fat,
-           (cfwnv.fiber * (lav.amount / 100))::real   as fiber
+    select null                                                       as food_id,
+           custom_food_id                                             as custom_food_id,
+           "day"                                                      as "day",
+           "minute"                                                   as "minute",
+           cf.description                                             as description,
+           lav.user_id                                                as user_id,
+           amount                                                     as amount,
+           (cfwnv.energy * (lav.amount :: real / 100 :: real))::real  as energy,
+           (cfwnv.protein * (lav.amount :: real / 100 :: real))::real as protein,
+           (cfwnv.carbs * (lav.amount :: real / 100 :: real))::real   as carbs,
+           (cfwnv.fat * (lav.amount :: real / 100 :: real))::real     as fat,
+           (cfwnv.fiber * (lav.amount :: real / 100 :: real))::real   as fiber
     from log_aggregated_with_offset($1) lav
              inner join custom_food cf on cf.id = lav.custom_food_id
              inner join custom_food_with_nutrients_view cfwnv on cfwnv.id = cf.id;
