@@ -22,8 +22,7 @@ case class Log(
 )
 
 object Log {
-
-  private case class LogIn(
+  private case class LogDto(
       foodId: Option[EntityId[Food]],
       customFoodId: Option[EntityId[CustomFood]],
       day: LocalDate,
@@ -33,7 +32,7 @@ object Log {
       nutrients: Nutrients)
 
   implicit val readMealFood: Read[Log] =
-    Read[LogIn].map { case LogIn(foodId, customFoodId, day, minute, foodDescription, amount, nutrients) =>
+    Read[LogDto].map { case LogDto(foodId, customFoodId, day, minute, foodDescription, amount, nutrients) =>
       // not exhaustive since database ensures one of the cases is matched
       val id = (foodId, customFoodId) match {
         case (Some(id), None) => Right(id)

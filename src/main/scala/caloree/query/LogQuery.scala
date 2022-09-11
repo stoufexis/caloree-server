@@ -66,7 +66,14 @@ object LogQuery {
     }
   }
 
-  def undoLog(user: UID, fid: Option[EFID], day: LocalDate, minute: MinuteInterval, times: Int): ConnectionIO[Unit] = {
+  def undoLog(
+      user: UID,
+      fid: Option[EFID],
+      day: LocalDate,
+      minute: MinuteInterval,
+      times: Int)(
+      implicit l: LogHandler
+  ): ConnectionIO[Unit] = {
     val MinuteInterval(start, end) = minute
     fid match {
       case Some(Left(fid))  =>
@@ -105,8 +112,14 @@ object LogQuery {
     }
   }
 
-  def insertLog(fid: EFID, amount: Grams, day: LocalDate, minute: Minute, user: UID)(
-      implicit l: LogHandler): ConnectionIO[Unit] = {
+  def insertLog(
+      fid: EFID,
+      amount: Grams,
+      day: LocalDate,
+      minute: Minute,
+      user: UID)(
+      implicit l: LogHandler
+  ): ConnectionIO[Unit] = {
     val foodId       = fid.toOption
     val customFoodId = fid.swap.toOption
 
@@ -146,8 +159,14 @@ object LogQuery {
     }
   }
 
-  def logModification(fid: Option[EFID], newAmount: Grams, day: LocalDate, minute: MinuteInterval, user: UID)(
-      implicit l: LogHandler): ConnectionIO[Unit] = {
+  def logModification(
+      fid: Option[EFID],
+      newAmount: Grams,
+      day: LocalDate,
+      minute: MinuteInterval,
+      user: UID)(
+      implicit l: LogHandler
+  ): ConnectionIO[Unit] = {
     val MinuteInterval(start, end) = minute
     fid match {
       case Some(Left(fid)) =>

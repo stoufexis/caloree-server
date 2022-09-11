@@ -6,20 +6,7 @@ import doobie.util.transactor.Transactor
 import cats.effect.MonadCancelThrow
 
 import caloree.dto.ModifyLog
-import caloree.model.Types.{
-  AccessToken,
-  CFID,
-  Description,
-  EFID,
-  EntityId,
-  FID,
-  Grams,
-  MinuteInterval,
-  Offset,
-  Password,
-  UID,
-  Username
-}
+import caloree.model.Types.{CFID, Description, EFID, FID, Grams, MinuteInterval, Offset, Password, UID, Username}
 import caloree.model.{CustomFood, CustomFoodPreview, Food, FoodPreview, Log, Nutrients, User, UserWithNutrients}
 
 import java.time.LocalDate
