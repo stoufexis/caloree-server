@@ -6,9 +6,9 @@ test ! -f /opt/check/has_ran &&
     /opt/tables.sql \
     /opt/static_foods.sql \
     /opt/static_nutrient.sql \
+    /opt/static_food_nutrient.sql \
     /opt/views.sql \
     /opt/functions.sql \
-    /opt/static_food_nutrient.sql \
     /opt/insert_default_user.sql |
   psql \
     --set=defaultUsername="$DEFAULT_USERNAME" \

@@ -29,9 +29,9 @@ object Types {
       case QueryParameterValue(value) =>
         value.split("-").toList match {
           case start :: end :: Nil =>
-            (start.toIntOption product end.toIntOption)
-              .map { case (s, e) => MinuteInterval(Minute(s), Minute(e)) }
-              .toValidNel(ParseFailure.apply(value, ""))
+            (start.toIntOption, end.toIntOption)
+              .mapN { (s, e) => MinuteInterval(Minute(s), Minute(e)) }
+              .toValidNel(ParseFailure(value, ""))
 
           case _ => ParseFailure(value, "").invalidNel
         }

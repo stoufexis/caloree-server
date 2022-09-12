@@ -6,8 +6,8 @@ import doobie.util.transactor.Transactor
 import cats.effect.MonadCancelThrow
 
 import caloree.dto.ModifyLog
-import caloree.model.Types.{CFID, Description, EFID, FID, Grams, MinuteInterval, Offset, Password, UID, Username}
-import caloree.model.{CustomFood, CustomFoodPreview, Food, FoodPreview, Log, Nutrients, User, UserWithNutrients}
+import caloree.model.Types._
+import caloree.model._
 
 import java.time.LocalDate
 
@@ -64,4 +64,7 @@ object AllRepos {
       implicit lh: LogHandler): Run.Update[F, CFID] =
     Run.update(CustomFoodQuery.deleteCustomFood)
 
+  implicit def upsertTargetNutrientsRepo[F[_]: MonadCancelThrow: Transactor](
+      implicit lh: LogHandler): Run.Update[F, (UID, Nutrients)] =
+    Run.update((UserQuery.upsertTargetNutrients _).tupled)
 }

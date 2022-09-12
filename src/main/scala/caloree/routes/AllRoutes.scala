@@ -19,13 +19,14 @@ object AllRoutes {
       r1: Run.Optional[F, (Username, Password), User],
       r2: Run.Optional[F, (CFID, UID), CustomFood],
       r3: Run.Optional[F, (FID, Grams), Food],
-      r9: Run.Many[F, (Description, UID), CustomFoodPreview],
-      r10: Run.Many[F, Description, FoodPreview],
-      r11: Run.Many[F, (UID, Option[EFID], Offset, LocalDate, MinuteInterval), Log],
-      r12: Run.Update[F, (ModifyLog, UID)],
-      r13: Run.Optional[F, UID, UserWithNutrients],
-      add: Run.Update[F, (UID, Description, Nutrients)],
-      delete: Run.Update[F, CFID]
+      r4: Run.Many[F, (Description, UID), CustomFoodPreview],
+      r5: Run.Many[F, Description, FoodPreview],
+      r6: Run.Many[F, (UID, Option[EFID], Offset, LocalDate, MinuteInterval), Log],
+      r7: Run.Update[F, (ModifyLog, UID)],
+      r8: Run.Optional[F, UID, UserWithNutrients],
+      r9: Run.Update[F, (UID, Description, Nutrients)],
+      r10: Run.Update[F, CFID],
+      r11: Run.Update[F, (UID, Nutrients)]
   ): HttpRoutes[F] = Router(
     "user"        -> auth(UserRoutes.routes),
     "log"         -> auth(LogRoutes.routes),

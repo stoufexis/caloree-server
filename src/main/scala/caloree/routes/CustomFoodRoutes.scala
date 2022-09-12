@@ -29,7 +29,7 @@ object CustomFoodRoutes {
       case GET -> _ :? DescriptionP(d) +& PageP(p) +& LimitP(l) as u => getMany.run((d, u.id), p, l).asResponse
       case DELETE -> _ / CFID(id) as _                               => delete.run(id) *> Ok()
       case req @ POST -> _ as u                                      =>
-        req.decode.foldF(a => a.asResponse, cf => add.run((u.id, cf.description, cf.nutrients)) *> Ok())
+        req.decode.foldF(_.asResponse, cf => add.run((u.id, cf.description, cf.nutrients)) *> Ok())
     }
   }
 }

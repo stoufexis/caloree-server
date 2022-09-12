@@ -13,5 +13,5 @@ import caloree.model.Types.Description
 case class CustomFoodDto(description: Description, nutrients: Nutrients)
 
 object CustomFoodDto {
-  implicit def customFoodDtoEntityDecoder[F[_]: Concurrent]: EntityDecoder[F, CustomFoodDto] = jsonOf[F, CustomFoodDto]
+  implicit def customFoodDtoEntityDecoder[F[_]: Concurrent]: EntityDecoder[F, CustomFoodDto] = jsonOf
 }
