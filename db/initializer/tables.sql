@@ -81,5 +81,6 @@ create table user_target_nutrients
     id          bigserial primary key,
     user_id     bigint not null references "user",
     nutrient_id bigint not null references nutrient,
-    amount      real   not null
+    amount      real   not null,
+    constraint unique_user_id_nutrient_id unique (user_id, nutrient_id)
 );

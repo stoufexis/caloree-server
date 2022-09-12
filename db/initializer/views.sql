@@ -12,6 +12,8 @@ from food f
          join nutrient n on n.id = fn.nutrient_id
 group by f.id;
 
+refresh materialized view foods_with_nutrients_view;
+
 create view custom_food_with_nutrients_view as
 select cf.id,
        cf.user_id,
