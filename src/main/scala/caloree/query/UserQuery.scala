@@ -49,4 +49,10 @@ object UserQuery {
     """.update.run.as()
   }
 
+  def insertDefaultUser(username: Username, password: Password)(implicit l: LogHandler): ConnectionIO[Unit] =
+    sql"""
+      insert into "user" (username, hashed_password)
+      values ($username, sha256($password::bytea)) on conflict (username) do nothing;
+    """.update.run.as()
+
 }

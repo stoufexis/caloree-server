@@ -1,5 +1,6 @@
 package caloree.main
 
+import doobie.implicits._
 import doobie.util.log.LogHandler
 import doobie.util.transactor.Transactor
 
@@ -13,8 +14,9 @@ import cats.syntax.all._
 import caloree.auth.AuthUser
 import caloree.configuration.{ApiConfig, Config, DBConfig}
 import caloree.logging.DoobieLogger
+import caloree.model.Types.{Password, Username}
 import caloree.model._
-import caloree.query.AllRepos
+import caloree.query.{AllRepos, UserQuery}
 import caloree.routes.AllRoutes
 
 import org.typelevel.log4cats.LoggerFactory
@@ -28,7 +30,7 @@ object Main extends IOApp.Simple {
 
   val log: HttpApp[IO] => HttpApp[IO] = Logger.httpApp[IO](logHeaders = false, logBody = true)(_)
 
-  val app: IO[Nothing] =
+  val app: IO[Unit] =
     ConfigSource.default.load[Config]
       .map { case Config(db, api) =>
         implicit val xa: Transactor[IO] = DBConfig.transactor(db)
@@ -39,9 +41,17 @@ object Main extends IOApp.Simple {
 
         val app: HttpApp[IO] = log(AllRoutes.routes[IO].orNotFound)
 
-        ApiConfig
-          .server[IO](api)(app)
-          .use(_ => IO.never)
+        for {
+          _ <- DBConfig.fly4sRes[IO](db)
+            .use(_ => IO.unit)
+
+          _ <- UserQuery
+            .insertDefaultUser(Username(db.defaultUsername), Password(db.defaultPassword))
+            .transact(xa)
+
+          _ <- ApiConfig.server[IO](api)(app)
+            .use(_ => IO.never)
+        } yield ()
       }
       .left
       .map(x => new Exception(x.prettyPrint()))

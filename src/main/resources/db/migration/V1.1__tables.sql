@@ -84,3 +84,4 @@ create table user_target_nutrients
     amount      real   not null,
     constraint unique_user_id_nutrient_id unique (user_id, nutrient_id)
 );
+

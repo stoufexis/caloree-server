@@ -9,24 +9,7 @@ services:
     ports:
       - 5432:5432
 
-  postgres_initializer:
-    container_name: postgres_initializer
-    build:
-      context: ./initializer
-      dockerfile: Dockerfile
-    volumes:
-      - initializer_data:/opt/check
-    depends_on:
-      - postgres
-    environment:
-      - PGPASSWORD
-      - DEFAULT_USERNAME
-      - DEFAULT_PASSWORD
-
 volumes:
   db_data:
     external: true
     name: db_data
-  initializer_data:
-    external: true
-    name: initializer_data
