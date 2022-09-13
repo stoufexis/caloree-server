@@ -1,13 +1,13 @@
 package caloree.model
 
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import io.circe.{Decoder => CirceDecoder, Encoder => CirceEncoder}
+import io.circe.{Decoder, Encoder}
 
 import caloree.model.Types.{CFID, Description, UID}
 
 case class CustomFoodPreview(id: CFID, userId: UID, description: Description)
 
 object CustomFoodPreview {
-  implicit val foodPreviewCirceDecoder: CirceDecoder[CustomFoodPreview] = deriveDecoder
-  implicit val foodPreviewCirceEncoder: CirceEncoder[CustomFoodPreview] = deriveEncoder
+  implicit val foodPreviewCirceDecoder: Decoder[CustomFoodPreview] = deriveDecoder
+  implicit val foodPreviewCirceEncoder: Encoder[CustomFoodPreview] = deriveEncoder
 }

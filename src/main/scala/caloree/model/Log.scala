@@ -3,11 +3,9 @@ package caloree.model
 import doobie.Read
 import doobie.implicits.javasql._
 import doobie.implicits.javatimedrivernative._
-
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
-import io.circe.{Decoder => CirceDecoder, Encoder => CirceEncoder}
-
 import caloree.model.Types.{Description, EFID, EntityId, Grams, Minute}
+import io.circe.{Decoder, Encoder}
 
 import java.time.LocalDate
 
@@ -41,6 +39,6 @@ object Log {
       Log(id, day, minute, foodDescription, amount, nutrients)
     }
 
-  implicit val foodCirceDecoder: CirceDecoder[Log] = deriveDecoder
-  implicit val foodCirceEncoder: CirceEncoder[Log] = deriveEncoder
+  implicit val foodCirceDecoder: Decoder[Log] = deriveDecoder
+  implicit val foodCirceEncoder: Encoder[Log] = deriveEncoder
 }
