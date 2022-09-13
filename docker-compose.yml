@@ -1,5 +1,5 @@
 services:
-  postgres:
+  caloree-postgres:
     container_name: caloree-postgres
     image: postgres:14-alpine
     volumes:
@@ -7,7 +7,9 @@ services:
     environment:
       - POSTGRES_PASSWORD
 
-  server:
+  caloree-server:
+    depends_on:
+      - postgres
     container_name: caloree-server
     image: stefanostouf/caloree-server:0.1.0-SNAPSHOT
     environment:

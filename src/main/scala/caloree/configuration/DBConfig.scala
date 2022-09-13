@@ -29,7 +29,7 @@ object DBConfig {
       .map { pgPass =>
         DBConfig(
           driver = "org.postgresql.Driver",
-          url = "jdbc:postgresql://localhost:5432/postgres",
+          url = "jdbc:postgresql://caloree-postgres:5432/postgres",
           user = "postgres",
           pass = pgPass,
           migrationsTable = "flyway",
