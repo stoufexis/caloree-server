@@ -12,7 +12,7 @@ import cats.effect.{IO, IOApp}
 import cats.syntax.all._
 
 import caloree.auth.AuthUser
-import caloree.configuration.{ApiConfig, Config, DBConfig}
+import caloree.configuration.{ApiConfig, Config, DBConfig, DefaultUser}
 import caloree.logging.DoobieLogger
 import caloree.model.Types.{Password, Username}
 import caloree.model._
@@ -42,15 +42,9 @@ object Main extends IOApp.Simple {
         val app: HttpApp[IO] = log(AllRoutes.routes[IO].orNotFound)
 
         for {
-          _ <- DBConfig.fly4sRes[IO](db)
-            .use(_ => IO.unit)
-
-          _ <- UserQuery
-            .insertDefaultUser(Username(db.defaultUsername), Password(db.defaultPassword))
-            .transact(xa)
-
-          _ <- ApiConfig.server[IO](api)(app)
-            .use(_ => IO.never)
+          _ <- DBConfig.fly4sRes[IO](db).use(_ => IO.unit)
+          _ <- DefaultUser.createDefaultUser[IO]
+          _ <- ApiConfig.server[IO](api)(app).use(_ => IO.never)
         } yield ()
       }
       .left

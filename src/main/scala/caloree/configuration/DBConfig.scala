@@ -16,9 +16,7 @@ case class DBConfig(
     user: String,
     pass: String,
     migrationsTable: String,
-    migrationsLocation: String,
-    defaultUsername: String,
-    defaultPassword: String
+    migrationsLocation: String
 )
 
 object DBConfig {
@@ -36,7 +34,7 @@ object DBConfig {
     config = Fly4sConfig(
       table = config.migrationsTable,
       locations = Location.of(config.migrationsLocation),
-      sqlMigrationPrefix = "V",
+      sqlMigrationPrefix = "V"
     )
   ).evalMap(_.migrate)
 }

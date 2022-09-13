@@ -67,4 +67,8 @@ object AllRepos {
   implicit def upsertTargetNutrientsRepo[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Update[F, (UID, Nutrients)] =
     Run.update((UserQuery.upsertTargetNutrients _).tupled)
+
+  implicit def insertDefaultUserRepo[F[_]: MonadCancelThrow: Transactor](
+      implicit l: LogHandler): Run.Update[F, (Username, Password)] =
+    Run.update((UserQuery.insertDefaultUser _).tupled)
 }
