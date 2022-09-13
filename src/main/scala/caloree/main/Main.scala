@@ -12,17 +12,15 @@ import cats.effect.{IO, IOApp}
 import cats.syntax.all._
 
 import caloree.auth.AuthUser
-import caloree.configuration.{ApiConfig, Config, DBConfig, DefaultUser}
+import caloree.configuration.{DBConfig, DefaultUser, MakeServer}
 import caloree.logging.DoobieLogger
 import caloree.model.Types.{Password, Username}
 import caloree.model._
-import caloree.query.{AllRepos, UserQuery}
+import caloree.query.{AllRepos, Run, UserQuery}
 import caloree.routes.AllRoutes
 
 import org.typelevel.log4cats.LoggerFactory
 import org.typelevel.log4cats.slf4j.Slf4jFactory
-import pureconfig._
-import pureconfig.generic.auto._
 
 object Main extends IOApp.Simple {
   implicit val logging: LoggerFactory[IO] = Slf4jFactory[IO]
@@ -31,8 +29,8 @@ object Main extends IOApp.Simple {
   val log: HttpApp[IO] => HttpApp[IO] = Logger.httpApp[IO](logHeaders = false, logBody = true)(_)
 
   val app: IO[Unit] =
-    ConfigSource.default.load[Config]
-      .map { case Config(db, api) =>
+    (DBConfig.get[IO], DefaultUser.get[IO])
+      .flatMapN { case (db, (u, p)) =>
         implicit val xa: Transactor[IO] = DBConfig.transactor(db)
 
         import AllRepos._
@@ -43,14 +41,10 @@ object Main extends IOApp.Simple {
 
         for {
           _ <- DBConfig.fly4sRes[IO](db).use(_ => IO.unit)
-          _ <- DefaultUser.createDefaultUser[IO]
-          _ <- ApiConfig.server[IO](api)(app).use(_ => IO.never)
+          _ <- implicitly[Run.Update[IO, (Username, Password)]].run((u, p))
+          _ <- MakeServer.apply[IO](app).use(_ => IO.never)
         } yield ()
       }
-      .left
-      .map(x => new Exception(x.prettyPrint()))
-      .liftTo[IO]
-      .flatten
 
   def run: IO[Unit] = app
 }

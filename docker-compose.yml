@@ -6,15 +6,16 @@ services:
       - db_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD
-    ports:
-      - 5432:5432
 
   server:
     container_name: caloree-server
     image: stefanostouf/caloree-server:0.1.0-SNAPSHOT
     environment:
-      - DEFAULT_USERNAME
-      - DEFAULT_PASSWORD
+      - CALOREE_DEFAULT_USERNAME
+      - CALOREE_DEFAULT_PASSWORD
+      - POSTGRES_PASSWORD
+    ports:
+      - 8080:8080
 
 volumes:
   db_data:

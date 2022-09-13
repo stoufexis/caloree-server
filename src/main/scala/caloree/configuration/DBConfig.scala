@@ -2,8 +2,11 @@ package caloree.configuration
 
 import doobie.util.transactor.Transactor
 
-import cats.effect.{Async, Resource}
+import cats.MonadThrow
+import cats.effect.{Async, Resource, Sync}
 import cats.syntax.all._
+
+import scala.util.Try
 
 import fly4s.core.Fly4s
 import fly4s.core.data.{Fly4sConfig, Location, MigrateResult, ValidatedMigrateResult}
@@ -20,6 +23,20 @@ case class DBConfig(
 )
 
 object DBConfig {
+  def get[F[_]: MonadThrow]: F[DBConfig] =
+    Try(System.getenv("POSTGRES_PASSWORD"))
+      .liftTo[F]
+      .map { pgPass =>
+        DBConfig(
+          driver = "org.postgresql.Driver",
+          url = "jdbc:postgresql://localhost:5432/postgres",
+          user = "postgres",
+          pass = pgPass,
+          migrationsTable = "flyway",
+          migrationsLocation = "db/migration"
+        )
+      }
+
   def transactor[F[_]: Async](config: DBConfig): Transactor[F] = Transactor.fromDriverManager[F](
     driver = config.driver,
     url = config.url,
