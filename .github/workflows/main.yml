@@ -15,5 +15,5 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Build and Publish XYZ Docker image
+      - name: Build and Publish Docker image
         run: sbt docker:publish
