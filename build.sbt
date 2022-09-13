@@ -12,9 +12,11 @@ val simulacrumVersion = "1.0.1"
 val pureconfigVersion = "0.17.1"
 val fly4sVersion      = "0.0.13"
 
+dockerRepository := Some("docker.io/stefanostouf")
+
 lazy val root = (project in file("."))
   .settings(
-    name := "caloree-server-2",
+    name := "caloree-server",
     libraryDependencies ++= Seq(
       "io.circe"              %% "circe-core"           % circeVersion,
       "io.circe"              %% "circe-generic"        % circeVersion,
@@ -36,3 +38,5 @@ lazy val root = (project in file("."))
     scalacOptions ++= Seq("-Ymacro-annotations"),
     addCompilerPlugin("org.typelevel" % "kind-projector" % "0.13.2" cross CrossVersion.full)
   )
+
+enablePlugins(JavaAppPackaging)
