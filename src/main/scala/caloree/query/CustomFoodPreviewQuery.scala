@@ -16,7 +16,7 @@ object CustomFoodPreviewQuery {
     sql"""
       select id, user_id, description
       from   custom_food
-      where  description_tsvector @@ to_tsquery('english', $description)
+      where  description_tsvector @@ plainto_tsquery('english', $description)
       and    user_id = $user
       limit  $limit
       offset $page * $limit
