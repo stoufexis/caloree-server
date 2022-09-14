@@ -9,7 +9,7 @@ services:
 
   caloree-server:
     depends_on:
-      - postgres
+      - caloree-postgres
     container_name: caloree-server
     image: stefanostouf/caloree-server:0.1.0-SNAPSHOT
     environment:
