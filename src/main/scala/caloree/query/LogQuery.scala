@@ -100,6 +100,7 @@ object LogQuery {
       select food_id, custom_food_id, -amount, "day", "minute", "user_id"
       from log_aggregated_with_offset(0)
       where "day" = $day and user_id = $user
+      order by "minute"
       offset $num limit 1
     """.update.run.as()
 
@@ -109,6 +110,7 @@ object LogQuery {
       select food_id, custom_food_id, ($newAmount - amount), "day", "minute", "user_id"
       from log_aggregated_with_offset(0)
       where "day" = $day and user_id = $user
+      order by "minute"
       offset $num limit 1
     """.update.run.as()
 
