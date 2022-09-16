@@ -66,51 +66,17 @@ object LogQuery {
     }
   }
 
-  def undoLog(
-      user: UID,
-      fid: Option[EFID],
-      day: LocalDate,
-      minute: MinuteInterval,
-      times: Int)(
-      implicit l: LogHandler
-  ): ConnectionIO[Unit] = {
-    val MinuteInterval(start, end) = minute
-    fid match {
-      case Some(Left(fid))  =>
-        sql"""
-          delete from log 
-          where id in (
-            select id
-            from "log"
-            where user_id = $user and "day" = $day and custom_food_id = $fid and "minute" >= $start and "minute" < $end
-            order by generated_at desc
-            limit $times
-          )
-        """.update.run.as()
-      case Some(Right(fid)) =>
-        sql"""
-          delete from log 
-          where id in (
-            select id
-            from "log"
-            where user_id = $user and "day" = $day and food_id = $fid and "minute" >= $start and "minute" < $end
-            order by generated_at desc
-            limit $times
-          )
-        """.update.run.as()
-      case None             =>
-        sql"""
-          delete from log 
-          where id in (
-            select id
-            from "log"
-            where user_id = $user and "day" = $day and "minute" >= $start and "minute" < $end
-            order by generated_at desc
-            limit $times
-          )
-        """.update.run.as()
-    }
-  }
+  def undoLog(user: UID, day: LocalDate, times: Int)(implicit l: LogHandler): ConnectionIO[Unit] =
+    sql"""
+      delete from "log"
+      where id in (
+        select id
+        from "log"
+        where user_id = $user and "day" = $day
+        order by generated_at desc
+        limit $times
+      )
+    """.update.run.as()
 
   def insertLog(
       fid: EFID,
@@ -122,76 +88,28 @@ object LogQuery {
   ): ConnectionIO[Unit] = {
     val foodId       = fid.toOption
     val customFoodId = fid.swap.toOption
-
     sql"""
       insert into "log" (food_id, custom_food_id, amount, "day", "minute", user_id)
       values ($foodId, $customFoodId, $amount, $day, $minute, $user)
     """.update.run.as()
   }
 
-  def logDeletion(fid: Option[EFID], day: LocalDate, minute: MinuteInterval, user: UID)(
-      implicit l: LogHandler): ConnectionIO[Unit] = {
-    val MinuteInterval(start, end) = minute
-    fid match {
-      case Some(Left(fid)) =>
-        sql"""
-          insert into "log"(food_id, custom_food_id, amount, "day", "minute", user_id)
-          select food_id, custom_food_id, -amount, "day", "minute", "user_id" 
-          from log_aggregated_with_offset(0)
-          where user_id = $user and "day" = $day and "minute" >= $start and "minute" < $end and custom_food_id = $fid
-        """.update.run.as()
+  def logDeletion(day: LocalDate, num: Int, user: UID)(implicit l: LogHandler): ConnectionIO[Unit] =
+    sql"""
+      insert into "log"(food_id, custom_food_id, amount, "day", "minute", user_id)
+      select food_id, custom_food_id, -amount, "day", "minute", "user_id"
+      from log_aggregated_with_offset(0)
+      where "day" = $day and user_id = $user
+      offset $num limit 1
+    """.update.run.as()
 
-      case Some(Right(fid)) =>
-        sql"""
-          insert into "log"(food_id, custom_food_id, amount, "day", "minute", user_id)
-          select food_id, custom_food_id, -amount, "day", "minute", "user_id" 
-          from log_aggregated_with_offset(0)
-          where user_id = $user and "day" = $day and "minute" >= $start and "minute" < $end and food_id = $fid
-        """.update.run.as()
+  def logModification(newAmount: Grams, day: LocalDate, num: Int, user: UID)(implicit l: LogHandler): ConnectionIO[Unit] =
+    sql"""
+      insert into "log"(food_id, custom_food_id, amount, "day", "minute", user_id)
+      select food_id, custom_food_id, ($newAmount - amount), "day", "minute", "user_id"
+      from log_aggregated_with_offset(0)
+      where "day" = $day and user_id = $user
+      offset $num limit 1
+    """.update.run.as()
 
-      case None =>
-        sql"""
-          insert into "log"(food_id, custom_food_id, amount, "day", "minute", user_id)
-          select food_id, custom_food_id, -amount, "day", "minute", "user_id" 
-          from log_aggregated_with_offset(0)
-          where user_id = $user and "day" = $day and "minute" >= $start and "minute" < $end
-        """.update.run.as()
-    }
-  }
-
-  def logModification(
-      fid: Option[EFID],
-      newAmount: Grams,
-      day: LocalDate,
-      minute: MinuteInterval,
-      user: UID)(
-      implicit l: LogHandler
-  ): ConnectionIO[Unit] = {
-    val MinuteInterval(start, end) = minute
-    fid match {
-      case Some(Left(fid)) =>
-        sql"""
-          insert into "log"(food_id, custom_food_id, amount, "day", "minute", user_id)
-          select food_id, custom_food_id, ($newAmount - amount), "day", "minute", "user_id" 
-          from log_aggregated_with_offset(0)
-          where user_id = $user and "day" = $day and "minute" >= $start and "minute" < $end and custom_food_id = $fid
-        """.update.run.as()
-
-      case Some(Right(fid)) =>
-        sql"""
-          insert into "log"(food_id, custom_food_id, amount, "day", "minute", user_id)
-          select food_id, custom_food_id, ($newAmount - amount), "day", "minute", "user_id" 
-          from log_aggregated_with_offset(0)
-          where user_id = $user and "day" = $day and "minute" >= $start and "minute" < $end and food_id = $fid
-        """.update.run.as()
-
-      case None =>
-        sql"""
-          insert into "log"(food_id, custom_food_id, amount, "day", "minute", user_id)
-          select food_id, custom_food_id, ($newAmount - amount), "day", "minute", "user_id" 
-          from log_aggregated_with_offset(0)
-          where user_id = $user and "day" = $day and "minute" >= $start and "minute" < $end
-        """.update.run.as()
-    }
-  }
 }

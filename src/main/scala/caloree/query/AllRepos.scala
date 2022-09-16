@@ -39,17 +39,10 @@ object AllRepos {
   implicit def insertMealFoodRepos[F[_]: MonadCancelThrow: Transactor](
       implicit lh: LogHandler): Run.Update[F, (ModifyLog, UID)] =
     Run.update {
-      case (ModifyLog.Add(fid, amount, day, minute), user) =>
-        LogQuery.insertLog(fid, amount, day, minute, user)
-
-      case (ModifyLog.Remove(fid, day, minute), user) =>
-        LogQuery.logDeletion(fid, day, minute, user)
-
-      case (ModifyLog.Modify(fid, newAmount, day, minute), user) =>
-        LogQuery.logModification(fid, newAmount, day, minute, user)
-
-      case (ModifyLog.Undo(fid, day, minute, times), user) =>
-        LogQuery.undoLog(user, fid, day, minute, times)
+      case (ModifyLog.Add(fid, amount, day, minute), u) => LogQuery.insertLog(fid, amount, day, minute, u)
+      case (ModifyLog.Remove(day, num), u)              => LogQuery.logDeletion(day, num, u)
+      case (ModifyLog.Modify(newAmount, day, num), u)   => LogQuery.logModification(newAmount, day, num, u)
+      case (ModifyLog.Undo(day, num), u)                => LogQuery.undoLog(u, day, num)
     }
 
   implicit def getUserWithNutrients[F[_]: MonadCancelThrow: Transactor](
