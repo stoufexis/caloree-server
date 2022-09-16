@@ -16,7 +16,7 @@ object AuthUser {
   def apply[F[_]: Monad](implicit get: Run.Optional[F, (Username, Password), User]): AuthMiddleware[F, User] =
     AuthMiddleware {
       Kleisli { req =>
-        OptionT apply
+        OptionT {
           req.headers
             .get[Authorization]
             .map(_.credentials)
@@ -24,7 +24,7 @@ object AuthUser {
             .map(get.run)
             .traverse(identity)
             .map(_.flatten)
-
+        }
       }
     }
 }

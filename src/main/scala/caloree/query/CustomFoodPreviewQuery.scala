@@ -12,14 +12,25 @@ object CustomFoodPreviewQuery {
       page: Page,
       limit: Limit)(
       implicit lh: LogHandler
-  ): ConnectionIO[List[CustomFoodPreview]] =
-    sql"""
-      select id, user_id, description
-      from   custom_food
-      where  description_tsvector @@ plainto_tsquery('english', $description)
-      and    user_id = $user
-      limit  $limit
-      offset $page * $limit
-    """.query[CustomFoodPreview].to
+  ): ConnectionIO[List[CustomFoodPreview]] = {
+    if (description.string.isBlank) {
+      sql"""
+        select id, user_id, description
+        from   custom_food
+        where  user_id = $user
+        limit  $limit
+        offset $page * $limit
+      """.query[CustomFoodPreview].to
+    } else {
+      sql"""
+        select id, user_id, description
+        from   custom_food
+        where  description_tsvector @@ plainto_tsquery('english', $description)
+        and    user_id = $user
+        limit  $limit
+        offset $page * $limit
+      """.query[CustomFoodPreview].to
+    }
+  }
 
 }
