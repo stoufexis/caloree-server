@@ -12,7 +12,7 @@ object FoodPreviewQuery {
       page: Page,
       limit: Limit)(
       implicit lh: LogHandler
-  ): ConnectionIO[List[FoodPreview]] = {
+  ): ConnectionIO[List[FoodPreview]] =
     if (description.string.isEmpty) {
       sql"""
         select id, description
@@ -29,5 +29,5 @@ object FoodPreviewQuery {
         offset $page * $limit
       """.query[FoodPreview].to
     }
-  }
+
 }

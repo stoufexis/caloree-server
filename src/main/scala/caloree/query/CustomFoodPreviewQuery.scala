@@ -2,8 +2,9 @@ package caloree.query
 
 import doobie._
 import doobie.implicits._
-import caloree.model.Types.{Description, EntityId, Limit, Page, UID}
-import caloree.model.{CustomFood, CustomFoodPreview, User}
+
+import caloree.model.CustomFoodPreview
+import caloree.model.Types.{Description, Limit, Page, UID}
 
 object CustomFoodPreviewQuery {
   def customFoodsPreviewByDescription(
@@ -12,7 +13,7 @@ object CustomFoodPreviewQuery {
       page: Page,
       limit: Limit)(
       implicit lh: LogHandler
-  ): ConnectionIO[List[CustomFoodPreview]] = {
+  ): ConnectionIO[List[CustomFoodPreview]] =
     if (description.string.isEmpty) {
       sql"""
         select id, user_id, description
@@ -31,6 +32,5 @@ object CustomFoodPreviewQuery {
         offset $page * $limit
       """.query[CustomFoodPreview].to
     }
-  }
 
 }

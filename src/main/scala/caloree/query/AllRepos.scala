@@ -21,7 +21,7 @@ object AllRepos {
     Run.many { case ((d, u), p, l) => CustomFoodPreviewQuery.customFoodsPreviewByDescription(d, u, p, l) }
 
   implicit def customFoodByIdRepo[F[_]: MonadCancelThrow: Transactor](
-      implicit lh: LogHandler): Run.Optional[F, (CFID, UID), CustomFood] =
+      implicit lh: LogHandler): Run.Optional[F, (CFID, UID, Grams), CustomFood] =
     Run.option((CustomFoodQuery.customFoodById _).tupled)
 
   implicit def foodsPreviewByDescriptionRepo[F[_]: MonadCancelThrow: Transactor](

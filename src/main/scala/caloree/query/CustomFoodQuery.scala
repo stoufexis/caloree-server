@@ -9,9 +9,17 @@ import caloree.model.Types._
 import caloree.model.{CustomFood, Nutrients}
 
 object CustomFoodQuery {
-  def customFoodById(id: CFID, user: UID)(implicit lh: LogHandler): ConnectionIO[Option[CustomFood]] =
+  def customFoodById(id: CFID, user: UID, amount: Grams)(implicit lh: LogHandler): ConnectionIO[Option[CustomFood]] =
     sql"""
-      select id, user_id, description, 100, energy, protein, carbs, fat, fiber
+      select id, 
+             user_id, 
+             description, 
+             $amount,
+             (energy / 100)  * $amount,
+             (protein / 100) * $amount,
+             (carbs / 100)   * $amount,
+             (fat / 100)     * $amount,
+             (fiber / 100)   * $amount
       from custom_food_with_nutrients_view
       where id      = $id
       and   user_id = $user
