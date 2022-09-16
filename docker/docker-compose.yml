@@ -15,7 +15,7 @@ services:
     depends_on:
       - caloree-postgres
     container_name: caloree-server
-    image: stefanostouf/caloree-server:0.1.0-SNAPSHOT
+    image: stefanostouf/caloree-server:0.1.0
     environment:
       - CALOREE_DEFAULT_USERNAME
       - CALOREE_DEFAULT_PASSWORD
