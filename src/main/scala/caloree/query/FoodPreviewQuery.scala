@@ -13,7 +13,7 @@ object FoodPreviewQuery {
       limit: Limit)(
       implicit lh: LogHandler
   ): ConnectionIO[List[FoodPreview]] = {
-    if (description.string.isBlank) {
+    if (description.string.isEmpty) {
       sql"""
         select id, description
         from food
