@@ -34,7 +34,7 @@ object LogQuery {
           and    amount > 0
           and    "minute" >= $start and "minute" < $end
           and    custom_food_id = $fid
-          order by "minute", food_id, custom_food_id, amount
+          order by "minute", generated_at
           limit  $limit
           offset $page * $limit
         """.query[Log].to
@@ -47,7 +47,7 @@ object LogQuery {
           and    amount > 0
           and    "minute" >= $start and "minute" < $end
           and    food_id = $fid
-          order by "minute", food_id, custom_food_id, amount
+          order by "minute", generated_at
           limit  $limit
           offset $page * $limit
         """.query[Log].to
@@ -59,7 +59,7 @@ object LogQuery {
           and    "day" = $day
           and    amount > 0
           and    "minute" >= $start and "minute" < $end
-          order by "minute", food_id, custom_food_id, amount
+          order by "minute", generated_at
           limit  $limit
           offset $page * $limit
         """.query[Log].to
@@ -100,7 +100,7 @@ object LogQuery {
       select food_id, custom_food_id, -amount, "day", "minute", "user_id"
       from log_aggregated_with_offset(0)
       where amount > 0 and "day" = $day and user_id = $user
-      order by "minute", food_id, custom_food_id, amount
+      order by "minute", generated_at
       offset $num limit 1
     """.update.run.as()
 
@@ -116,7 +116,7 @@ object LogQuery {
       select food_id, custom_food_id, ($newAmount - amount), "day", "minute", "user_id"
       from log_aggregated_with_offset(0)
       where amount > 0 and "day" = $day and user_id = $user
-      order by "minute", food_id, custom_food_id, amount
+      order by "minute", generated_at
       offset $num limit 1
     """.update.run.as()
 }
