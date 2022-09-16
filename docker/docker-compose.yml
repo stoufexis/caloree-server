@@ -1,9 +1,9 @@
 version: "3.3"
 
 services:
-  caloree-postgres:
-    container_name: caloree-postgres
-    image: stefanostouf/caloree-postgres:latest
+  caloree-database:
+    container_name: caloree-database
+    image: stefanostouf/caloree-database:latest
     volumes:
       - db_data:/var/lib/postgresql/data
     environment:
@@ -14,7 +14,7 @@ services:
 
   caloree-server:
     depends_on:
-      - caloree-postgres
+      - caloree-database
     container_name: caloree-server
     image: stefanostouf/caloree-server:0.1.0
     environment:
