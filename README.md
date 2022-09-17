@@ -25,5 +25,6 @@ Clone the repository and build the docker image.
 
 ```bash
 > git clone git@github.com:StefanosTouf/caloree-server.git
+> cd caloree-server
 > sbt docker:publishLocal
 ```
