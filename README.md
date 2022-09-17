@@ -18,3 +18,12 @@ then, in the same directory, retrieve the `docker-compose` file, create the requ
 > docker volume create db_data
 > docker-compose up -d
 ```
+
+## Building the server locally
+
+Clone the repository and build the docker image.
+
+```bash
+> git clone git@github.com:StefanosTouf/caloree-server.git
+> sbt docker:publishLocal
+```
