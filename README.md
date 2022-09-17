@@ -19,7 +19,7 @@ then, in the same directory, retrieve the `docker-compose` file, create the requ
 > docker-compose up -d
 ```
 
-## Building the server locally
+## Building locally
 
 Clone the repository and build the docker image.
 
